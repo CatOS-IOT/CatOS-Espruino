@@ -85,8 +85,8 @@ void vcbprintf(vcbprintf_callback user_callback, void *user_data, const char *fm
 void cbprintf(vcbprintf_callback user_callback, void *user_data, const char *fmt, ...);
 int espruino_snprintf_va( char * s, size_t n, const char * fmt, va_list argp );
 int espruino_snprintf( char * s, size_t n, const char * fmt, ... );
-int rand();
-void srand(unsigned int seed);
+int ejs_rand();
+void ejs_srand(unsigned int seed);
 char clipi8(int x);
 int twosComplement(int val, unsigned char bits);
 bool calculateParity(uint8_t v);
@@ -423,7 +423,6 @@ void jsvObjectSetIntChild(JsVar *obj, const char *name, JsVarInt value);
 void jsvObjectSetFloatChild(JsVar *obj, const char *name, JsVarFloat value);
 void jsvObjectSetBoolChild(JsVar *obj, const char *name, bool value);
 void jsvObjectSetStringChild(JsVar *obj, const char *name, const char *value);
-void jsvObjectSetPinChild(JsVar *obj, const char *name, int value);
 JsVar *jsvObjectSetChildVar(JsVar *obj, JsVar *name, JsVar *child);
 void jsvObjectSetChildAndUnLock(JsVar *obj, const char *name, JsVar *child);
 void jsvObjectRemoveChild(JsVar *parent, const char *name);
@@ -455,7 +454,7 @@ JsVar *jsvArrayPopFirst(JsVar *arr);
 void jsvArrayAddUnique(JsVar *arr, JsVar *v);
 JsVar *jsvArrayJoin(JsVar *arr, JsVar *filler, bool ignoreNull);
 void jsvArrayInsertBefore(JsVar *arr, JsVar *beforeIndex, JsVar *element);
-static __attribute__ ((gnu_inline)) inline bool jsvArrayIsEmpty(JsVar *arr) { do { if (!(jsvIsArray(arr))) jsAssertFail("/home/jeremy/Desktop/PersonalProject/CatOS/CatOS-Espruino/src/jsvar.h",770,""); } while(0); return !jsvGetFirstChild(arr); }
+static __attribute__ ((gnu_inline)) inline bool jsvArrayIsEmpty(JsVar *arr) { do { if (!(jsvIsArray(arr))) jsAssertFail("/tmp/catos-espruino-master-fix/src/jsvar.h",772,""); } while(0); return !jsvGetFirstChild(arr); }
 void jsvTrace(JsVar *var, int indent);
 int jsvGarbageCollect();
 void jsvDefragment();
@@ -5105,9 +5104,6 @@ void jsvObjectSetBoolChild(JsVar *obj, const char *name, bool value) {
 void jsvObjectSetStringChild(JsVar *obj, const char *name, const char *value) {
   jsvObjectSetChildAndUnLock(obj,name,jsvNewFromString(value));
 }
-void jsvObjectSetPinChild(JsVar *obj, const char *name, int value) {
-  jsvObjectSetChildAndUnLock(obj,name,jsvNewFromPin((Pin)value));
-}
 void jsvObjectSetChildAndUnLock(JsVar *obj, const char *name, JsVar *child) {
   jsvUnLock(jsvObjectSetChild(obj, name, child));
 }
@@ -5124,8 +5120,8 @@ JsVar *jsvObjectSetOrRemoveChild(JsVar *obj, const char *name, JsVar *child) {
   return child;
 }
 void jsvObjectAppendAll(JsVar *target, JsVar *source) {
-  do { if (!(jsvHasChildren(target))) jsAssertFail("bin/espruino_embedded.c",5026,""); } while(0);
-  do { if (!(jsvHasChildren(source))) jsAssertFail("bin/espruino_embedded.c",5027,""); } while(0);
+  do { if (!(jsvHasChildren(target))) jsAssertFail("bin/espruino_embedded.c",5028,""); } while(0);
+  do { if (!(jsvHasChildren(source))) jsAssertFail("bin/espruino_embedded.c",5029,""); } while(0);
   JsvObjectIterator it;
   jsvObjectIteratorNew(&it, source);
   while (jsvObjectIteratorHasValue(&it)) {
@@ -5150,17 +5146,17 @@ int jsvGetChildren(const JsVar *v) {
   return children;
 }
 JsVar *jsvGetFirstName(JsVar *v) {
-  do { if (!(jsvHasChildren(v))) jsAssertFail("bin/espruino_embedded.c",5056,""); } while(0);
+  do { if (!(jsvHasChildren(v))) jsAssertFail("bin/espruino_embedded.c",5058,""); } while(0);
   if (!jsvGetFirstChild(v)) return 0;
   return jsvLock(jsvGetFirstChild(v));
 }
 JsVarInt jsvGetArrayLength(const JsVar *arr) {
   if (!arr) return 0;
-  do { if (!(jsvIsArray(arr))) jsAssertFail("bin/espruino_embedded.c",5063,""); } while(0);
+  do { if (!(jsvIsArray(arr))) jsAssertFail("bin/espruino_embedded.c",5065,""); } while(0);
   return arr->varData.integer;
 }
 JsVarInt jsvSetArrayLength(JsVar *arr, JsVarInt length, bool truncate) {
-  do { if (!(jsvIsArray(arr))) jsAssertFail("bin/espruino_embedded.c",5068,""); } while(0);
+  do { if (!(jsvIsArray(arr))) jsAssertFail("bin/espruino_embedded.c",5070,""); } while(0);
   if (truncate && length < arr->varData.integer) {
   }
   arr->varData.integer = length;
@@ -5246,7 +5242,7 @@ JsVar *jsvGetArrayIndex(const JsVar *arr, JsVarInt index) {
   if (index > lastArrayIndex/2) {
     while (childref) {
       JsVar *child = jsvLock(childref);
-      do { if (!(jsvIsInt(child))) jsAssertFail("bin/espruino_embedded.c",5173,""); } while(0);
+      do { if (!(jsvIsInt(child))) jsAssertFail("bin/espruino_embedded.c",5175,""); } while(0);
       if (child->varData.integer == index) {
         return child;
       }
@@ -5257,7 +5253,7 @@ JsVar *jsvGetArrayIndex(const JsVar *arr, JsVarInt index) {
     childref = jsvGetFirstChild(arr);
     while (childref) {
       JsVar *child = jsvLock(childref);
-      do { if (!(jsvIsInt(child))) jsAssertFail("bin/espruino_embedded.c",5186,""); } while(0);
+      do { if (!(jsvIsInt(child))) jsAssertFail("bin/espruino_embedded.c",5188,""); } while(0);
       if (child->varData.integer == index) {
         return child;
       }
@@ -5331,7 +5327,7 @@ JsVar *jsvGetIndexOf(JsVar *arr, JsVar *value, bool matchExact) {
   return jsvGetIndexOfFull(arr, value, matchExact, false, 0);
 }
 JsVarInt jsvArrayAddToEnd(JsVar *arr, JsVar *value, JsVarInt initialValue) {
-  do { if (!(jsvIsArray(arr))) jsAssertFail("bin/espruino_embedded.c",5274,""); } while(0);
+  do { if (!(jsvIsArray(arr))) jsAssertFail("bin/espruino_embedded.c",5276,""); } while(0);
   JsVarInt index = initialValue;
   if (jsvGetLastChild(arr)) {
     JsVar *last = jsvLock(jsvGetLastChild(arr));
@@ -5345,7 +5341,7 @@ JsVarInt jsvArrayAddToEnd(JsVar *arr, JsVar *value, JsVarInt initialValue) {
   return index+1;
 }
 JsVarInt jsvArrayPush(JsVar *arr, JsVar *value) {
-  do { if (!(jsvIsArray(arr))) jsAssertFail("bin/espruino_embedded.c",5291,""); } while(0);
+  do { if (!(jsvIsArray(arr))) jsAssertFail("bin/espruino_embedded.c",5293,""); } while(0);
   JsVarInt index = jsvGetArrayLength(arr);
   JsVar *idx = jsvMakeIntoVariableName(jsvNewFromInteger(index), value);
   if (!idx) return 0;
@@ -5366,8 +5362,8 @@ void jsvArrayPush2Int(JsVar *arr, JsVarInt a, JsVarInt b) {
   jsvArrayPushAndUnLock(arr, jsvNewFromInteger(b));
 }
 void jsvArrayPushAll(JsVar *target, JsVar *source, bool checkDuplicates) {
-  do { if (!(jsvIsArray(target))) jsAssertFail("bin/espruino_embedded.c",5320,""); } while(0);
-  do { if (!(jsvIsArray(source))) jsAssertFail("bin/espruino_embedded.c",5321,""); } while(0);
+  do { if (!(jsvIsArray(target))) jsAssertFail("bin/espruino_embedded.c",5322,""); } while(0);
+  do { if (!(jsvIsArray(source))) jsAssertFail("bin/espruino_embedded.c",5323,""); } while(0);
   JsvObjectIterator it;
   jsvObjectIteratorNew(&it, source);
   while (jsvObjectIteratorHasValue(&it)) {
@@ -5387,7 +5383,7 @@ void jsvArrayPushAll(JsVar *target, JsVar *source, bool checkDuplicates) {
   jsvObjectIteratorFree(&it);
 }
 JsVar *jsvArrayPop(JsVar *arr) {
-  do { if (!(jsvIsArray(arr))) jsAssertFail("bin/espruino_embedded.c",5343,""); } while(0);
+  do { if (!(jsvIsArray(arr))) jsAssertFail("bin/espruino_embedded.c",5345,""); } while(0);
   JsVar *child = 0;
   JsVarInt length = jsvGetArrayLength(arr);
   if (length > 0) {
@@ -5418,7 +5414,7 @@ JsVar *jsvArrayPop(JsVar *arr) {
   return child;
 }
 JsVar *jsvArrayPopFirst(JsVar *arr) {
-  do { if (!(jsvIsArray(arr))) jsAssertFail("bin/espruino_embedded.c",5383,""); } while(0);
+  do { if (!(jsvIsArray(arr))) jsAssertFail("bin/espruino_embedded.c",5385,""); } while(0);
   if (jsvGetFirstChild(arr)) {
     JsVar *child = jsvLock(jsvGetFirstChild(arr));
     if (jsvGetFirstChild(arr) == jsvGetLastChild(arr))
@@ -5447,7 +5443,7 @@ void jsvArrayAddUnique(JsVar *arr, JsVar *v) {
 JsVar *jsvArrayJoin(JsVar *arr, JsVar *filler, bool ignoreNull) {
   JsVar *str = jsvNewFromEmptyString();
   if (!str) return 0;
-  do { if (!(!filler || jsvIsString(filler))) jsAssertFail("bin/espruino_embedded.c",5417,""); } while(0);
+  do { if (!(!filler || jsvIsString(filler))) jsAssertFail("bin/espruino_embedded.c",5419,""); } while(0);
   JsvIterator it;
   jsvIteratorNew(&it, arr, JSIF_EVERY_ARRAY_ELEMENT);
   JsvStringIterator itdst;
@@ -5525,7 +5521,7 @@ bool jsvMathsOpTypeEqual(JsVar *a, JsVar *b) {
     if (!jsvGetBool(contents)) eql = false;
     jsvUnLock(contents);
   } else {
-    do { if (!(!(jsvIsString(a) && jsvIsString(b) && jsvIsBasicVarEqual(a,b)))) jsAssertFail("bin/espruino_embedded.c",5523,""); } while(0);
+    do { if (!(!(jsvIsString(a) && jsvIsString(b) && jsvIsBasicVarEqual(a,b)))) jsAssertFail("bin/espruino_embedded.c",5525,""); } while(0);
   }
   return eql;
 }
@@ -5905,10 +5901,10 @@ int jsvGarbageCollect() {
               jsvUnRef(child);
           }
         }
-        do { if (!(!jsvHasChildren(var) || !jsvGetFirstChild(var) || jsvGetLocks(jsvGetAddressOf(jsvGetFirstChild(var))) || jsvGetAddressOf(jsvGetFirstChild(var))->flags==JSV_UNUSED || (jsvGetAddressOf(jsvGetFirstChild(var))->flags&JSV_GARBAGE_COLLECT))) jsAssertFail("bin/espruino_embedded.c",6018,""); } while(0);
-        do { if (!(!jsvHasChildren(var) || !jsvGetLastChild(var) || jsvGetLocks(jsvGetAddressOf(jsvGetLastChild(var))) || jsvGetAddressOf(jsvGetLastChild(var))->flags==JSV_UNUSED || (jsvGetAddressOf(jsvGetLastChild(var))->flags&JSV_GARBAGE_COLLECT))) jsAssertFail("bin/espruino_embedded.c",6022,""); } while(0);
-        do { if (!(!jsvIsName(var) || !jsvGetPrevSibling(var) || jsvGetLocks(jsvGetAddressOf(jsvGetPrevSibling(var))) || jsvGetAddressOf(jsvGetPrevSibling(var))->flags==JSV_UNUSED || (jsvGetAddressOf(jsvGetPrevSibling(var))->flags&JSV_GARBAGE_COLLECT))) jsAssertFail("bin/espruino_embedded.c",6026,""); } while(0);
-        do { if (!(!jsvIsName(var) || !jsvGetNextSibling(var) || jsvGetLocks(jsvGetAddressOf(jsvGetNextSibling(var))) || jsvGetAddressOf(jsvGetNextSibling(var))->flags==JSV_UNUSED || (jsvGetAddressOf(jsvGetNextSibling(var))->flags&JSV_GARBAGE_COLLECT))) jsAssertFail("bin/espruino_embedded.c",6030,""); } while(0);
+        do { if (!(!jsvHasChildren(var) || !jsvGetFirstChild(var) || jsvGetLocks(jsvGetAddressOf(jsvGetFirstChild(var))) || jsvGetAddressOf(jsvGetFirstChild(var))->flags==JSV_UNUSED || (jsvGetAddressOf(jsvGetFirstChild(var))->flags&JSV_GARBAGE_COLLECT))) jsAssertFail("bin/espruino_embedded.c",6020,""); } while(0);
+        do { if (!(!jsvHasChildren(var) || !jsvGetLastChild(var) || jsvGetLocks(jsvGetAddressOf(jsvGetLastChild(var))) || jsvGetAddressOf(jsvGetLastChild(var))->flags==JSV_UNUSED || (jsvGetAddressOf(jsvGetLastChild(var))->flags&JSV_GARBAGE_COLLECT))) jsAssertFail("bin/espruino_embedded.c",6024,""); } while(0);
+        do { if (!(!jsvIsName(var) || !jsvGetPrevSibling(var) || jsvGetLocks(jsvGetAddressOf(jsvGetPrevSibling(var))) || jsvGetAddressOf(jsvGetPrevSibling(var))->flags==JSV_UNUSED || (jsvGetAddressOf(jsvGetPrevSibling(var))->flags&JSV_GARBAGE_COLLECT))) jsAssertFail("bin/espruino_embedded.c",6028,""); } while(0);
+        do { if (!(!jsvIsName(var) || !jsvGetNextSibling(var) || jsvGetLocks(jsvGetAddressOf(jsvGetNextSibling(var))) || jsvGetAddressOf(jsvGetNextSibling(var))->flags==JSV_UNUSED || (jsvGetAddressOf(jsvGetNextSibling(var))->flags&JSV_GARBAGE_COLLECT))) jsAssertFail("bin/espruino_embedded.c",6032,""); } while(0);
         var->flags = JSV_UNUSED;
         if (lastEmpty) jsvSetNextSibling(lastEmpty, i);
         else jsVarFirstEmpty = i;
@@ -6152,7 +6148,7 @@ bool jsvReadConfigObject(JsVar *object, jsvConfigObject *configs, int nConfigs) 
           case JSV_BOOLEAN: *((bool*)configs[i].ptr) = jsvGetBool(val); break;
           case JSV_INTEGER: *((JsVarInt*)configs[i].ptr) = jsvGetInteger(val); break;
           case JSV_FLOAT: *((JsVarFloat*)configs[i].ptr) = jsvGetFloat(val); break;
-          default: do { if (!(0)) jsAssertFail("bin/espruino_embedded.c",6337,""); } while(0); break;
+          default: do { if (!(0)) jsAssertFail("bin/espruino_embedded.c",6339,""); } while(0); break;
           }
           jsvUnLock(val);
         }
@@ -6188,7 +6184,7 @@ JsVar *jsvCreateConfigObject(jsvConfigObject *configs, int nConfigs) {
       case JSV_FLOAT:
         v = jsvNewFromFloat(*((JsVarFloat*)configs[i].ptr)); break;
       default:
-        do { if (!(0)) jsAssertFail("bin/espruino_embedded.c",6380,""); } while(0);
+        do { if (!(0)) jsAssertFail("bin/espruino_embedded.c",6382,""); } while(0);
         break;
       }
       jsvObjectSetChildAndUnLock(o, configs[i].name, v);
@@ -6234,7 +6230,7 @@ JsVar *jsvNewDataViewWithData(JsVarInt length, unsigned char *data) {
   return view;
 }
 JsVar *jsvNewArrayBufferWithPtr(unsigned int length, char **ptr) {
-  do { if (!(ptr)) jsAssertFail("bin/espruino_embedded.c",6432,""); } while(0);
+  do { if (!(ptr)) jsAssertFail("bin/espruino_embedded.c",6434,""); } while(0);
   *ptr=0;
   JsVar *backingString = jsvNewFlatStringOfLength(length);
   if (!backingString) return 0;
@@ -6248,8 +6244,8 @@ JsVar *jsvNewArrayBufferWithPtr(unsigned int length, char **ptr) {
   return arr;
 }
 JsVar *jsvNewArrayBufferWithData(JsVarInt length, unsigned char *data) {
-  do { if (!(data)) jsAssertFail("bin/espruino_embedded.c",6447,""); } while(0);
-  do { if (!(length>=0)) jsAssertFail("bin/espruino_embedded.c",6448,""); } while(0);
+  do { if (!(data)) jsAssertFail("bin/espruino_embedded.c",6449,""); } while(0);
+  do { if (!(length>=0)) jsAssertFail("bin/espruino_embedded.c",6450,""); } while(0);
   if (length<0) return 0;
   JsVar *dst = 0;
   JsVar *arr = jsvNewArrayBufferWithPtr((unsigned int)length, (char**)&dst);
@@ -6261,7 +6257,7 @@ JsVar *jsvNewArrayBufferWithData(JsVarInt length, unsigned char *data) {
   return arr;
 }
 void *jsvMalloc(size_t size) {
-  do { if (!(size>0)) jsAssertFail("bin/espruino_embedded.c",6461,""); } while(0);
+  do { if (!(size>0)) jsAssertFail("bin/espruino_embedded.c",6463,""); } while(0);
   JsVar *flatStr = jsvNewFlatStringOfLength((unsigned int)size);
   if (!flatStr) {
     jsErrorFlags |= JSERR_LOW_MEMORY;
@@ -6542,14 +6538,14 @@ void jsvStringIteratorNextUTF8(JsvStringIterator *it) {
   return jsvStringIteratorNext(it);
 }
 void jsvStringIteratorGetPtrAndNext(JsvStringIterator *it, unsigned char **data, unsigned int *len) {
-  do { if (!(jsvStringIteratorHasChar(it))) jsAssertFail("bin/espruino_embedded.c",6895,""); } while(0);
+  do { if (!(jsvStringIteratorHasChar(it))) jsAssertFail("bin/espruino_embedded.c",6897,""); } while(0);
   *data = (unsigned char *)&it->ptr[it->charIdx];
   *len = (unsigned int)(it->charsInVar - it->charIdx);
   it->charIdx = it->charsInVar - 1;
   jsvStringIteratorNextInline(it);
 }
 void jsvStringIteratorGotoEnd(JsvStringIterator *it) {
-  do { if (!(it->var)) jsAssertFail("bin/espruino_embedded.c",6903,""); } while(0);
+  do { if (!(it->var)) jsAssertFail("bin/espruino_embedded.c",6905,""); } while(0);
   while (jsvGetLastChild(it->var)) {
     JsVar *next = jsvLock(jsvGetLastChild(it->var));
     jsvUnLock(it->var);
@@ -6576,14 +6572,14 @@ void jsvStringIteratorGotoUTF8(JsvStringIterator *it, JsVar *str, size_t idx) {
 void jsvStringIteratorAppend(JsvStringIterator *it, char ch) {
   if (!it->var) return;
   if (it->charsInVar>0) {
-    do { if (!(it->charIdx+1 == it->charsInVar)) jsAssertFail("bin/espruino_embedded.c",6946,""); } while(0);
+    do { if (!(it->charIdx+1 == it->charsInVar)) jsAssertFail("bin/espruino_embedded.c",6948,""); } while(0);
     it->charIdx++;
   } else
-    do { if (!(it->charIdx == 0)) jsAssertFail("bin/espruino_embedded.c",6949,""); } while(0);
+    do { if (!(it->charIdx == 0)) jsAssertFail("bin/espruino_embedded.c",6951,""); } while(0);
   if (it->charIdx >= jsvGetMaxCharactersInVar(it->var)) {
-    do { if (!(jsvHasStringExt(it->var))) jsAssertFail("bin/espruino_embedded.c",6955,""); } while(0);
+    do { if (!(jsvHasStringExt(it->var))) jsAssertFail("bin/espruino_embedded.c",6957,""); } while(0);
     if (!jsvHasStringExt(it->var)) return;
-    do { if (!(!jsvGetLastChild(it->var))) jsAssertFail("bin/espruino_embedded.c",6957,""); } while(0);
+    do { if (!(!jsvGetLastChild(it->var))) jsAssertFail("bin/espruino_embedded.c",6959,""); } while(0);
     JsVar *next = jsvNewWithFlags(JSV_STRING_EXT_0);
     if (!next) {
       jsvUnLock(it->var);
@@ -6613,7 +6609,7 @@ void jsvStringIteratorAppendString(JsvStringIterator *it, JsVar *str, size_t sta
   jsvStringIteratorFree(&sit);
 }
 void jsvObjectIteratorNew(JsvObjectIterator *it, JsVar *obj) {
-  do { if (!(!obj || jsvHasChildren(obj))) jsAssertFail("bin/espruino_embedded.c",6992,""); } while(0);
+  do { if (!(!obj || jsvHasChildren(obj))) jsAssertFail("bin/espruino_embedded.c",6994,""); } while(0);
   it->var = jsvHasChildren(obj) ? jsvLockSafe(jsvGetFirstChild(obj)) : 0;
 }
 void jsvObjectIteratorClone(JsvObjectIterator *dstit, JsvObjectIterator *it) {
@@ -6639,7 +6635,7 @@ void jsvObjectIteratorRemoveAndGotoNext(JsvObjectIterator *it, JsVar *parent) {
   }
 }
 void jsvArrayBufferIteratorNew(JsvArrayBufferIterator *it, JsVar *arrayBuffer, size_t index) {
-  do { if (!(jsvIsArrayBuffer(arrayBuffer))) jsAssertFail("bin/espruino_embedded.c",7026,""); } while(0);
+  do { if (!(jsvIsArrayBuffer(arrayBuffer))) jsAssertFail("bin/espruino_embedded.c",7028,""); } while(0);
   it->index = index;
   it->type = arrayBuffer->varData.arraybuffer.type;
   it->byteLength = arrayBuffer->varData.arraybuffer.length * (size_t)((it->type)&ARRAYBUFFERVIEW_MASK_SIZE);
@@ -6662,7 +6658,7 @@ __attribute__ ((gnu_inline)) inline void jsvArrayBufferIteratorClone(JsvArrayBuf
 }
 static void jsvArrayBufferIteratorGetValueData(JsvArrayBufferIterator *it, char *data) {
   if (it->type == ARRAYBUFFERVIEW_UNDEFINED) return;
-  do { if (!(!it->hasAccessedElement)) jsAssertFail("bin/espruino_embedded.c",7053,""); } while(0);
+  do { if (!(!it->hasAccessedElement)) jsAssertFail("bin/espruino_embedded.c",7055,""); } while(0);
   int i,dataLen = (int)(size_t)((it->type)&ARRAYBUFFERVIEW_MASK_SIZE);
   for (i=0;i<dataLen;i++) {
     data[i] = jsvStringIteratorGetChar(&it->it);
@@ -6685,7 +6681,7 @@ static JsVarFloat jsvArrayBufferIteratorDataToFloat(JsvArrayBufferIterator *it, 
   JsVarFloat v = 0;
   if (dataLen==4) v = *(float*)data;
   else if (dataLen==8) v = *(double*)data;
-  else do { if (!(0)) jsAssertFail("bin/espruino_embedded.c",7078,""); } while(0);
+  else do { if (!(0)) jsAssertFail("bin/espruino_embedded.c",7080,""); } while(0);
   return v;
 }
 JsVar *jsvArrayBufferIteratorGetValue(JsvArrayBufferIterator *it, bool bigEndian) {
@@ -6734,7 +6730,7 @@ JsVarFloat jsvArrayBufferIteratorGetFloatValue(JsvArrayBufferIterator *it) {
 }
 static void jsvArrayBufferIteratorIntToData(char *data, unsigned int dataLen, int type, JsVarInt v) {
   if ((((type)&ARRAYBUFFERVIEW_CLAMPED)!=0)) {
-    do { if (!(dataLen==1 && !(((type)&ARRAYBUFFERVIEW_SIGNED)!=0))) jsAssertFail("bin/espruino_embedded.c",7132,""); } while(0);
+    do { if (!(dataLen==1 && !(((type)&ARRAYBUFFERVIEW_SIGNED)!=0))) jsAssertFail("bin/espruino_embedded.c",7134,""); } while(0);
     if (v<0) v=0;
     if (v>255) v=255;
   }
@@ -6745,11 +6741,11 @@ static void jsvArrayBufferIteratorFloatToData(char *data, unsigned int dataLen, 
   ( (void)(type) );
   if (dataLen==4) { *(float*)data = (float)v; }
   else if (dataLen==8) { *(double*)data = (double)v; }
-  else do { if (!(0)) jsAssertFail("bin/espruino_embedded.c",7145,""); } while(0);
+  else do { if (!(0)) jsAssertFail("bin/espruino_embedded.c",7147,""); } while(0);
 }
 void jsvArrayBufferIteratorSetIntegerValue(JsvArrayBufferIterator *it, JsVarInt v) {
   if (it->type == ARRAYBUFFERVIEW_UNDEFINED) return;
-  do { if (!(!it->hasAccessedElement)) jsAssertFail("bin/espruino_embedded.c",7150,""); } while(0);
+  do { if (!(!it->hasAccessedElement)) jsAssertFail("bin/espruino_embedded.c",7152,""); } while(0);
   char data[8] __attribute__ ((aligned (4)));
   unsigned int i,dataLen = (size_t)((it->type)&ARRAYBUFFERVIEW_MASK_SIZE);
   if ((((it->type)&ARRAYBUFFERVIEW_FLOAT)!=0)) {
@@ -6765,7 +6761,7 @@ void jsvArrayBufferIteratorSetIntegerValue(JsvArrayBufferIterator *it, JsVarInt 
 }
 void jsvArrayBufferIteratorSetValue(JsvArrayBufferIterator *it, JsVar *value, bool bigEndian) {
   if (it->type == ARRAYBUFFERVIEW_UNDEFINED) return;
-  do { if (!(!it->hasAccessedElement)) jsAssertFail("bin/espruino_embedded.c",7169,""); } while(0);
+  do { if (!(!it->hasAccessedElement)) jsAssertFail("bin/espruino_embedded.c",7171,""); } while(0);
   char data[8] __attribute__ ((aligned (4)));
   int i,dataLen = (int)(size_t)((it->type)&ARRAYBUFFERVIEW_MASK_SIZE);
   if ((((it->type)&ARRAYBUFFERVIEW_FLOAT)!=0)) {
@@ -6783,7 +6779,7 @@ void jsvArrayBufferIteratorSetValue(JsvArrayBufferIterator *it, JsVar *value, bo
 }
 void jsvArrayBufferIteratorSetByteValue(JsvArrayBufferIterator *it, char c) {
   if ((size_t)((it->type)&ARRAYBUFFERVIEW_MASK_SIZE)!=1) {
-    do { if (!(0)) jsAssertFail("bin/espruino_embedded.c",7191,""); } while(0);
+    do { if (!(0)) jsAssertFail("bin/espruino_embedded.c",7193,""); } while(0);
     return;
   }
   jsvStringIteratorSetChar(&it->it, c);
@@ -6836,7 +6832,7 @@ void jsvIteratorNew(JsvIterator *it, JsVar *obj, JsvIteratorFlags flags) {
     jsvStringIteratorNew(&it->it.str, obj, 0);
   } else {
     it->type = JSVI_NONE;
-    do { if (!(0)) jsAssertFail("bin/espruino_embedded.c",7272,""); } while(0);
+    do { if (!(0)) jsAssertFail("bin/espruino_embedded.c",7274,""); } while(0);
   }
 }
 JsVar *jsvIteratorGetKey(JsvIterator *it) {
@@ -6845,7 +6841,7 @@ JsVar *jsvIteratorGetKey(JsvIterator *it) {
   case JSVI_OBJECT : return jsvObjectIteratorGetKey(&it->it.obj.it);
   case JSVI_STRING : return jsvMakeIntoVariableName(jsvNewFromInteger((JsVarInt)jsvStringIteratorGetIndex(&it->it.str)), 0);
   case JSVI_ARRAYBUFFER : return jsvMakeIntoVariableName(jsvArrayBufferIteratorGetIndex(&it->it.buf), 0);
-  default: do { if (!(0)) jsAssertFail("bin/espruino_embedded.c",7286,""); } while(0); return 0;
+  default: do { if (!(0)) jsAssertFail("bin/espruino_embedded.c",7288,""); } while(0); return 0;
   }
 }
 JsVar *jsvIteratorGetValue(JsvIterator *it) {
@@ -6857,7 +6853,7 @@ JsVar *jsvIteratorGetValue(JsvIterator *it) {
   case JSVI_OBJECT : return jsvObjectIteratorGetValue(&it->it.obj.it);
   case JSVI_STRING : { char buf = jsvStringIteratorGetChar(&it->it.str); return jsvNewStringOfLength(1, &buf); }
   case JSVI_ARRAYBUFFER : return jsvArrayBufferIteratorGetValueAndRewind(&it->it.buf);
-  default: do { if (!(0)) jsAssertFail("bin/espruino_embedded.c",7306,""); } while(0); return 0;
+  default: do { if (!(0)) jsAssertFail("bin/espruino_embedded.c",7308,""); } while(0); return 0;
   }
 }
 JsVarInt jsvIteratorGetIntegerValue(JsvIterator *it) {
@@ -6878,7 +6874,7 @@ JsVarInt jsvIteratorGetIntegerValue(JsvIterator *it) {
   }
   case JSVI_STRING : return (JsVarInt)jsvStringIteratorGetChar(&it->it.str);
   case JSVI_ARRAYBUFFER : return jsvArrayBufferIteratorGetIntegerValue(&it->it.buf);
-  default: do { if (!(0)) jsAssertFail("bin/espruino_embedded.c",7332,""); } while(0); return 0;
+  default: do { if (!(0)) jsAssertFail("bin/espruino_embedded.c",7334,""); } while(0); return 0;
   }
 }
 JsVarFloat jsvIteratorGetFloatValue(JsvIterator *it) {
@@ -6902,7 +6898,7 @@ JsVar *jsvIteratorSetValue(JsvIterator *it, JsVar *value) {
   case JSVI_OBJECT : jsvObjectIteratorSetValue(&it->it.obj.it, value); break;
   case JSVI_STRING : jsvStringIteratorSetChar(&it->it.str, (char)(jsvIsString(value) ? value->varData.str[0] : (char)jsvGetInteger(value))); break;
   case JSVI_ARRAYBUFFER : jsvArrayBufferIteratorSetValueAndRewind(&it->it.buf, value); break;
-  default: do { if (!(0)) jsAssertFail("bin/espruino_embedded.c",7361,""); } while(0); break;
+  default: do { if (!(0)) jsAssertFail("bin/espruino_embedded.c",7363,""); } while(0); break;
   }
   return value;
 }
@@ -6912,7 +6908,7 @@ bool jsvIteratorHasElement(JsvIterator *it) {
   case JSVI_OBJECT : return jsvObjectIteratorHasValue(&it->it.obj.it);
   case JSVI_STRING : return jsvStringIteratorHasChar(&it->it.str);
   case JSVI_ARRAYBUFFER : return jsvArrayBufferIteratorHasElement(&it->it.buf);
-  default: do { if (!(0)) jsAssertFail("bin/espruino_embedded.c",7375,""); } while(0); return 0;
+  default: do { if (!(0)) jsAssertFail("bin/espruino_embedded.c",7377,""); } while(0); return 0;
   }
 }
 void jsvIteratorNext(JsvIterator *it) {
@@ -6925,7 +6921,7 @@ void jsvIteratorNext(JsvIterator *it) {
   case JSVI_OBJECT : jsvObjectIteratorNext(&it->it.obj.it); break;
   case JSVI_STRING : jsvStringIteratorNext(&it->it.str); break;
   case JSVI_ARRAYBUFFER : jsvArrayBufferIteratorNext(&it->it.buf); break;
-  default: do { if (!(0)) jsAssertFail("bin/espruino_embedded.c",7392,""); } while(0); break;
+  default: do { if (!(0)) jsAssertFail("bin/espruino_embedded.c",7394,""); } while(0); break;
   }
 }
 void jsvIteratorFree(JsvIterator *it) {
@@ -6936,7 +6932,7 @@ void jsvIteratorFree(JsvIterator *it) {
   case JSVI_OBJECT : jsvObjectIteratorFree(&it->it.obj.it); break;
   case JSVI_STRING : jsvStringIteratorFree(&it->it.str); break;
   case JSVI_ARRAYBUFFER : jsvArrayBufferIteratorFree(&it->it.buf); break;
-  default: do { if (!(0)) jsAssertFail("bin/espruino_embedded.c",7407,""); } while(0); break;
+  default: do { if (!(0)) jsAssertFail("bin/espruino_embedded.c",7409,""); } while(0); break;
   }
 }
 void jsvIteratorClone(JsvIterator *dstit, JsvIterator *it) {
@@ -6949,7 +6945,7 @@ void jsvIteratorClone(JsvIterator *dstit, JsvIterator *it) {
   case JSVI_OBJECT : jsvObjectIteratorClone(&dstit->it.obj.it, &it->it.obj.it); break;
   case JSVI_STRING : jsvStringIteratorClone(&dstit->it.str, &it->it.str); break;
   case JSVI_ARRAYBUFFER : jsvArrayBufferIteratorClone(&dstit->it.buf, &it->it.buf); break;
-  default: do { if (!(0)) jsAssertFail("bin/espruino_embedded.c",7427,""); } while(0); break;
+  default: do { if (!(0)) jsAssertFail("bin/espruino_embedded.c",7429,""); } while(0); break;
   }
 }
 int jsvCompareStringIt(JsvStringIterator *ita, JsVar *vb, size_t startb, bool equalAtEndOfString) {
@@ -7291,7 +7287,7 @@ void itostr_extra(JsVarInt vals,char *str,bool signedVal, unsigned int base) {
   str[digits] = 0;
 }
 void ftoa_bounded_extra(JsVarFloat val,char *str, size_t len, int radix, int fractionalDigits) {
-  do { if (!(len>9)) jsAssertFail("bin/espruino_embedded.c",8093,""); } while(0);
+  do { if (!(len>9)) jsAssertFail("bin/espruino_embedded.c",8095,""); } while(0);
   const JsVarFloat stopAtError = 0.0000001;
   if (isnan(val)) strcpy(str,"NaN");
   else if (!isfinite(val)) {
@@ -7405,7 +7401,7 @@ void vcbprintf(
         int digits = fmtChar - '0';
         int v = va_arg(argp, int);
         if (*fmt=='x') itostr_extra(v, buf, false, 16);
-        else { do { if (!('d' == *fmt)) jsAssertFail("bin/espruino_embedded.c",8248,""); } while(0); itostr(v, buf, 10); }
+        else { do { if (!('d' == *fmt)) jsAssertFail("bin/espruino_embedded.c",8250,""); } while(0); itostr(v, buf, 10); }
         fmt++;
         int len = (int)strlen(buf);
         while (len < digits) {
@@ -7473,7 +7469,7 @@ void vcbprintf(
         user_callback(n, user_data);
         break;
       }
-      default: do { if (!(0)) jsAssertFail("bin/espruino_embedded.c",8319,""); } while(0); return;
+      default: do { if (!(0)) jsAssertFail("bin/espruino_embedded.c",8321,""); } while(0); return;
       }
     } else {
       buf[0] = *(fmt++);
@@ -7523,12 +7519,12 @@ size_t jsuGetFreeStack() {
 }
 unsigned int rand_m_w = 0xDEADBEEF;
 unsigned int rand_m_z = 0xCAFEBABE;
-int rand() {
+int ejs_rand() {
   rand_m_z = 36969 * (rand_m_z & 65535) + (rand_m_z >> 16);
   rand_m_w = 18000 * (rand_m_w & 65535) + (rand_m_w >> 16);
   return (int)RAND_MAX & (int)((rand_m_z << 16) + rand_m_w);
 }
-void srand(unsigned int seed) {
+void ejs_srand(unsigned int seed) {
   rand_m_w = (seed&0xFFFF) | (seed<<16);
   rand_m_z = (seed&0xFFFF0000) | (seed>>16);
 }
@@ -7723,7 +7719,7 @@ bool jspeiAddScope(JsVar *scope) {
 }
 void jspeiRemoveScope() {
   if (!execInfo.scopesVar || !jsvGetArrayLength(execInfo.scopesVar)) {
-    do { if (!(0)) jsAssertFail("bin/espruino_embedded.c",8960,""); } while(0);
+    do { if (!(0)) jsAssertFail("bin/espruino_embedded.c",8962,""); } while(0);
     return;
   }
   jsvUnLock(jsvArrayPop(execInfo.scopesVar));
@@ -7899,15 +7895,15 @@ __attribute__ ((noinline)) bool jspeFunctionDefinitionInternal(JsVar *funcVar, b
         jsWarn("Function marked with \"compiled\" uploaded in source form");
       }
       else if (jsvIsStringEqual(tokenValue, "ram")) {
-        { do { if (!(0+lex->tk==(LEX_STR))) jsAssertFail("bin/espruino_embedded.c",9184,""); } while(0);jslGetNextToken(); };
-        if (lex->tk==';') { do { if (!(0+lex->tk==(';'))) jsAssertFail("bin/espruino_embedded.c",9185,""); } while(0);jslGetNextToken(); };
+        { do { if (!(0+lex->tk==(LEX_STR))) jsAssertFail("bin/espruino_embedded.c",9186,""); } while(0);jslGetNextToken(); };
+        if (lex->tk==';') { do { if (!(0+lex->tk==(';'))) jsAssertFail("bin/espruino_embedded.c",9187,""); } while(0);jslGetNextToken(); };
         forcePretokenise = true;
       }
       jsvUnLock(tokenValue);
     }
     if (funcVar && lex->tk==LEX_R_RETURN) {
       funcVar->flags = (funcVar->flags & ~JSV_VARTYPEMASK) | JSV_FUNCTION_RETURN;
-      { do { if (!(0+lex->tk==(LEX_R_RETURN))) jsAssertFail("bin/espruino_embedded.c",9231,""); } while(0);jslGetNextToken(); };
+      { do { if (!(0+lex->tk==(LEX_R_RETURN))) jsAssertFail("bin/espruino_embedded.c",9233,""); } while(0);jslGetNextToken(); };
     }
   }
   jslSkipWhiteSpace();
@@ -7922,7 +7918,7 @@ __attribute__ ((noinline)) bool jspeFunctionDefinitionInternal(JsVar *funcVar, b
       if (lex->tk == '{') brackets++;
       if (lex->tk == '}') brackets--;
       lastTokenEnd = (int)jsvStringIteratorGetIndex(&lex->it)-1;
-      { do { if (!(0+lex->tk==(lex->tk))) jsAssertFail("bin/espruino_embedded.c",9247,""); } while(0);jslGetNextToken(); };
+      { do { if (!(0+lex->tk==(lex->tk))) jsAssertFail("bin/espruino_embedded.c",9249,""); } while(0);jslGetNextToken(); };
     }
     execInfo.execute = oldExec;
   } else {
@@ -7962,7 +7958,7 @@ __attribute__ ((noinline)) JsVar *jspeFunctionDefinition(bool parseNamedFunction
   JsVar *functionInternalName = 0;
   if (parseNamedFunction && lex->tk==LEX_ID) {
     if (funcVar) functionInternalName = jslGetTokenValueAsVar();
-    { do { if (!(0+lex->tk==(LEX_ID))) jsAssertFail("bin/espruino_embedded.c",9311,""); } while(0);jslGetNextToken(); };
+    { do { if (!(0+lex->tk==(LEX_ID))) jsAssertFail("bin/espruino_embedded.c",9313,""); } while(0);jslGetNextToken(); };
   }
   if (!jspeFunctionArguments(funcVar)) {
     jsvUnLock2(functionInternalName, funcVar);
@@ -7974,7 +7970,7 @@ __attribute__ ((noinline)) JsVar *jspeFunctionDefinition(bool parseNamedFunction
   return funcVar;
 }
 __attribute__ ((noinline)) bool jspeParseFunctionCallBrackets() {
-  do { if (!(!(((execInfo.execute)&EXEC_RUN_MASK)==EXEC_YES))) jsAssertFail("bin/espruino_embedded.c",9334,""); } while(0);
+  do { if (!(!(((execInfo.execute)&EXEC_RUN_MASK)==EXEC_YES))) jsAssertFail("bin/espruino_embedded.c",9336,""); } while(0);
   { if (!jslMatch(('('))) { ; return 0; } };
   while (!(((execInfo.execute)&EXEC_NO_PARSE_MASK)!=0) && lex->tk != ')') {
     jsvUnLock(jspeAssignmentExpression());
@@ -8074,7 +8070,7 @@ __attribute__ ((noinline)) JsVar *jspeFunctionCall(JsVar *function, JsVar *funct
       }
       if (nativePtr && !(((execInfo.execute)&EXEC_ERROR_MASK)!=0)) {
         returnVar = jsnCallFunction(nativePtr, function->varData.native.argTypes, thisVar, argPtr, argCount);
-        do { if (!(!jsvIsName(returnVar))) jsAssertFail("bin/espruino_embedded.c",9482,""); } while(0);
+        do { if (!(!jsvIsName(returnVar))) jsAssertFail("bin/espruino_embedded.c",9484,""); } while(0);
       } else {
         returnVar = 0;
       }
@@ -8333,7 +8329,7 @@ __attribute__ ((noinline)) JsVar *jspeFactorMember(JsVar *a, JsVar **parentResul
   JsVar *parent = 0;
   while (lex->tk=='.' || lex->tk=='[') {
     if (lex->tk == '.') {
-      { do { if (!(0+lex->tk==('.'))) jsAssertFail("bin/espruino_embedded.c",9929,""); } while(0);jslGetNextToken(); };
+      { do { if (!(0+lex->tk==('.'))) jsAssertFail("bin/espruino_embedded.c",9931,""); } while(0);jslGetNextToken(); };
       if (jslIsIDOrReservedWord()) {
         if ((((execInfo.execute)&EXEC_RUN_MASK)==EXEC_YES)) {
           const char *name = jslGetTokenValueAsString();
@@ -8361,7 +8357,7 @@ __attribute__ ((noinline)) JsVar *jspeFactorMember(JsVar *a, JsVar **parentResul
       }
     } else if (lex->tk == '[') {
       JsVar *index;
-      { do { if (!(0+lex->tk==('['))) jsAssertFail("bin/espruino_embedded.c",9964,""); } while(0);jslGetNextToken(); };
+      { do { if (!(0+lex->tk==('['))) jsAssertFail("bin/espruino_embedded.c",9966,""); } while(0);jslGetNextToken(); };
       if (!jspCheckStackPosition()) return parent;
       index = jsvSkipNameAndUnLock(jspeAssignmentExpression());
       { if (!jslMatch((']'))) { jsvUnLock2(parent, index);; return a; } };
@@ -8386,7 +8382,7 @@ __attribute__ ((noinline)) JsVar *jspeFactorMember(JsVar *a, JsVar **parentResul
       }
       jsvUnLock(index);
     } else {
-      do { if (!(0)) jsAssertFail("bin/espruino_embedded.c",9992,""); } while(0);
+      do { if (!(0)) jsAssertFail("bin/espruino_embedded.c",9994,""); } while(0);
     }
   }
   if (parentResult) *parentResult = parent;
@@ -8394,7 +8390,7 @@ __attribute__ ((noinline)) JsVar *jspeFactorMember(JsVar *a, JsVar **parentResul
   return a;
 }
 __attribute__ ((noinline)) JsVar *jspeConstruct(JsVar *func, JsVar *funcName, bool hasArgs) {
-  do { if (!((((execInfo.execute)&EXEC_RUN_MASK)==EXEC_YES))) jsAssertFail("bin/espruino_embedded.c",10002,""); } while(0);
+  do { if (!((((execInfo.execute)&EXEC_RUN_MASK)==EXEC_YES))) jsAssertFail("bin/espruino_embedded.c",10004,""); } while(0);
   if (!jsvIsFunction(func)) {
     jsExceptionHere(JSET_ERROR, "Constructor should be a function, but is %t", func);
     return 0;
@@ -8414,7 +8410,7 @@ __attribute__ ((noinline)) JsVar *jspeConstruct(JsVar *func, JsVar *funcName, bo
 __attribute__ ((noinline)) JsVar *jspeFactorFunctionCall() {
   bool isConstructor = false;
   if (lex->tk==LEX_R_NEW) {
-    { do { if (!(0+lex->tk==(LEX_R_NEW))) jsAssertFail("bin/espruino_embedded.c",10036,""); } while(0);jslGetNextToken(); };
+    { do { if (!(0+lex->tk==(LEX_R_NEW))) jsAssertFail("bin/espruino_embedded.c",10038,""); } while(0);jslGetNextToken(); };
     isConstructor = true;
     if (lex->tk==LEX_R_NEW) {
       jsExceptionHere(JSET_ERROR, "Nesting 'new' operators is unsupported");
@@ -8426,7 +8422,7 @@ __attribute__ ((noinline)) JsVar *jspeFactorFunctionCall() {
   JsVar *a = 0;
   bool hasSetCurrentClassConstructor = false;
   if (lex->tk==LEX_R_SUPER) {
-    { do { if (!(0+lex->tk==(LEX_R_SUPER))) jsAssertFail("bin/espruino_embedded.c",10052,""); } while(0);jslGetNextToken(); };
+    { do { if (!(0+lex->tk==(LEX_R_SUPER))) jsAssertFail("bin/espruino_embedded.c",10054,""); } while(0);jslGetNextToken(); };
     if (jsvIsObject(execInfo.thisVar)) {
       JsVar *proto1;
       if (execInfo.currentClassConstructor && lex->tk=='(') {
@@ -8541,7 +8537,7 @@ __attribute__ ((noinline)) JsVar *jspeFactorObject() {
         if (isGetter || isSetter) {
           jsvUnLock(varName);
           varName = jslGetTokenValueAsVar();
-          { do { if (!(0+lex->tk==(LEX_ID))) jsAssertFail("bin/espruino_embedded.c",10222,""); } while(0);jslGetNextToken(); };
+          { do { if (!(0+lex->tk==(LEX_ID))) jsAssertFail("bin/espruino_embedded.c",10224,""); } while(0);jslGetNextToken(); };
           JsVar *method = jspeFunctionDefinition(false);
           jsvAddGetterOrSetter(contents, varName, isGetter, method);
           jsvUnLock(method);
@@ -8636,7 +8632,7 @@ __attribute__ ((noinline)) void jspEnsureIsPrototype(JsVar *instanceOf, JsVar *p
   jsvUnLock2(constructor, prototypeVar);
 }
 __attribute__ ((noinline)) JsVar *jspeFactorTypeOf() {
-  { do { if (!(0+lex->tk==(LEX_R_TYPEOF))) jsAssertFail("bin/espruino_embedded.c",10329,""); } while(0);jslGetNextToken(); };
+  { do { if (!(0+lex->tk==(LEX_R_TYPEOF))) jsAssertFail("bin/espruino_embedded.c",10331,""); } while(0);jslGetNextToken(); };
   JsVar *a = jspeUnaryExpression();
   JsVar *result = 0;
   if ((((execInfo.execute)&EXEC_RUN_MASK)==EXEC_YES)) {
@@ -8651,7 +8647,7 @@ __attribute__ ((noinline)) JsVar *jspeFactorTypeOf() {
   return result;
 }
 __attribute__ ((noinline)) JsVar *jspeFactorDelete() {
-  { do { if (!(0+lex->tk==(LEX_R_DELETE))) jsAssertFail("bin/espruino_embedded.c",10346,""); } while(0);jslGetNextToken(); };
+  { do { if (!(0+lex->tk==(LEX_R_DELETE))) jsAssertFail("bin/espruino_embedded.c",10348,""); } while(0);jslGetNextToken(); };
   JsVar *parent = 0;
   JsVar *a = jspeFactorMember(jspeFactor(), &parent);
   JsVar *result = 0;
@@ -8723,7 +8719,7 @@ JsVar *jspeTemplateLiteral() {
     }
     jsvUnLock(template);
   }
-  { do { if (!(0+lex->tk==(LEX_TEMPLATE_LITERAL))) jsAssertFail("bin/espruino_embedded.c",10431,""); } while(0);jslGetNextToken(); };
+  { do { if (!(0+lex->tk==(LEX_TEMPLATE_LITERAL))) jsAssertFail("bin/espruino_embedded.c",10433,""); } while(0);jslGetNextToken(); };
   return a;
 }
 __attribute__ ((noinline)) JsVar *jspeAddNamedFunctionParameter(JsVar *funcVar, JsVar *name) {
@@ -8739,9 +8735,9 @@ __attribute__ ((noinline)) JsVar *jspeAddNamedFunctionParameter(JsVar *funcVar, 
   return funcVar;
 }
 __attribute__ ((noinline)) JsVar *jspeArrowFunction(JsVar *funcVar, JsVar *a) {
-  { do { if (!(0+lex->tk==(LEX_ARROW_FUNCTION))) jsAssertFail("bin/espruino_embedded.c",10453,""); } while(0);jslGetNextToken(); };
+  { do { if (!(0+lex->tk==(LEX_ARROW_FUNCTION))) jsAssertFail("bin/espruino_embedded.c",10455,""); } while(0);jslGetNextToken(); };
   if ((((execInfo.execute)&EXEC_RUN_MASK)==EXEC_YES)) {
-    do { if (!(!a || jsvIsName(a))) jsAssertFail("bin/espruino_embedded.c",10455,""); } while(0);
+    do { if (!(!a || jsvIsName(a))) jsAssertFail("bin/espruino_embedded.c",10457,""); } while(0);
     funcVar = jspeAddNamedFunctionParameter(funcVar, a);
   }
   bool expressionOnly = lex->tk!='{';
@@ -8788,7 +8784,7 @@ __attribute__ ((noinline)) JsVar *jspeClassDefinition(bool parseNamedClass) {
   if (parseNamedClass && lex->tk==LEX_ID) {
     if (classStaticFields)
       jsvObjectSetChildAndUnLock(classStaticFields, "\xFF""nam", jslGetTokenValueAsVar());
-    { do { if (!(0+lex->tk==(LEX_ID))) jsAssertFail("bin/espruino_embedded.c",10524,""); } while(0);jslGetNextToken(); };
+    { do { if (!(0+lex->tk==(LEX_ID))) jsAssertFail("bin/espruino_embedded.c",10526,""); } while(0);jslGetNextToken(); };
   }
   if (classFunction) {
     JsVar *prototypeName = jsvFindOrAddChildFromString(classFunction, "prototype");
@@ -8797,7 +8793,7 @@ __attribute__ ((noinline)) JsVar *jspeClassDefinition(bool parseNamedClass) {
     jsvUnLock(prototypeName);
   }
   if (lex->tk==LEX_R_EXTENDS) {
-    { do { if (!(0+lex->tk==(LEX_R_EXTENDS))) jsAssertFail("bin/espruino_embedded.c",10533,""); } while(0);jslGetNextToken(); };
+    { do { if (!(0+lex->tk==(LEX_R_EXTENDS))) jsAssertFail("bin/espruino_embedded.c",10535,""); } while(0);jslGetNextToken(); };
     JsVar *extendsFromName = 0;
     JsVar *extendsFrom = 0;
     if (actuallyCreateClass) {
@@ -8822,7 +8818,7 @@ __attribute__ ((noinline)) JsVar *jspeClassDefinition(bool parseNamedClass) {
   { if (!jslMatch(('{'))) { jsvUnLock3(classFunction,classStaticFields,classPrototype); return 0; } };
   while ((lex->tk==LEX_ID || lex->tk==LEX_R_STATIC) && !jspIsInterrupted()) {
     bool isStatic = lex->tk==LEX_R_STATIC;
-    if (isStatic) { do { if (!(0+lex->tk==(LEX_R_STATIC))) jsAssertFail("bin/espruino_embedded.c",10562,""); } while(0);jslGetNextToken(); };
+    if (isStatic) { do { if (!(0+lex->tk==(LEX_R_STATIC))) jsAssertFail("bin/espruino_embedded.c",10564,""); } while(0);jslGetNextToken(); };
     JsVar *funcName = jslGetTokenValueAsVar();
     bool isConstructor = jsvIsStringEqual(funcName, "constructor");
     { if (!jslMatch((LEX_ID))) { jsvUnLock4(funcName,classFunction,classStaticFields,classPrototype); return 0; } };
@@ -8833,7 +8829,7 @@ __attribute__ ((noinline)) JsVar *jspeClassDefinition(bool parseNamedClass) {
       if (isGetter || isSetter) {
         jsvUnLock(funcName);
         funcName = jslGetTokenValueAsVar();
-        { do { if (!(0+lex->tk==(LEX_ID))) jsAssertFail("bin/espruino_embedded.c",10575,""); } while(0);jslGetNextToken(); };
+        { do { if (!(0+lex->tk==(LEX_ID))) jsAssertFail("bin/espruino_embedded.c",10577,""); } while(0);jslGetNextToken(); };
       }
     }
     JsVar *obj = isStatic ? classStaticFields : classPrototype;
@@ -8855,7 +8851,7 @@ __attribute__ ((noinline)) JsVar *jspeClassDefinition(bool parseNamedClass) {
         jsvUnLock(value);
       }
     }
-    while (lex->tk==';') { do { if (!(0+lex->tk==(';'))) jsAssertFail("bin/espruino_embedded.c",10600,""); } while(0);jslGetNextToken(); };
+    while (lex->tk==';') { do { if (!(0+lex->tk==(';'))) jsAssertFail("bin/espruino_embedded.c",10602,""); } while(0);jslGetNextToken(); };
     jsvUnLock(funcName);
   }
   jsvUnLock(classPrototype);
@@ -8867,7 +8863,7 @@ __attribute__ ((noinline)) JsVar *jspeClassDefinition(bool parseNamedClass) {
 __attribute__ ((noinline)) JsVar *jspeFactor() {
   if (lex->tk==LEX_ID) {
     JsVar *a = jspGetNamedVariable(jslGetTokenValueAsString());
-    { do { if (!(0+lex->tk==(LEX_ID))) jsAssertFail("bin/espruino_embedded.c",10618,""); } while(0);jslGetNextToken(); };
+    { do { if (!(0+lex->tk==(LEX_ID))) jsAssertFail("bin/espruino_embedded.c",10620,""); } while(0);jslGetNextToken(); };
     if (lex->tk==LEX_TEMPLATE_LITERAL)
       jsExceptionHere(JSET_SYNTAXERROR, "Tagged template literals not supported");
     else if (lex->tk==LEX_ARROW_FUNCTION &&
@@ -8882,37 +8878,37 @@ __attribute__ ((noinline)) JsVar *jspeFactor() {
     if ((((execInfo.execute)&EXEC_RUN_MASK)==EXEC_YES)) {
       v = jslGetTokenValueAsVar();
     }
-    { do { if (!(0+lex->tk==(LEX_INT))) jsAssertFail("bin/espruino_embedded.c",10636,""); } while(0);jslGetNextToken(); };
+    { do { if (!(0+lex->tk==(LEX_INT))) jsAssertFail("bin/espruino_embedded.c",10638,""); } while(0);jslGetNextToken(); };
     return v;
   } else if (lex->tk==LEX_FLOAT) {
     JsVar *v = 0;
     if ((((execInfo.execute)&EXEC_RUN_MASK)==EXEC_YES)) {
       v = jsvNewFromFloat(stringToFloat(jslGetTokenValueAsString()));
     }
-    { do { if (!(0+lex->tk==(LEX_FLOAT))) jsAssertFail("bin/espruino_embedded.c",10643,""); } while(0);jslGetNextToken(); };
+    { do { if (!(0+lex->tk==(LEX_FLOAT))) jsAssertFail("bin/espruino_embedded.c",10645,""); } while(0);jslGetNextToken(); };
     return v;
   } else if (lex->tk=='(') {
-    { do { if (!(0+lex->tk==('('))) jsAssertFail("bin/espruino_embedded.c",10646,""); } while(0);jslGetNextToken(); };
+    { do { if (!(0+lex->tk==('('))) jsAssertFail("bin/espruino_embedded.c",10648,""); } while(0);jslGetNextToken(); };
     if (!jspCheckStackPosition()) return 0;
     return jspeExpressionOrArrowFunction();
   } else if (lex->tk==LEX_R_TRUE) {
-    { do { if (!(0+lex->tk==(LEX_R_TRUE))) jsAssertFail("bin/espruino_embedded.c",10658,""); } while(0);jslGetNextToken(); };
+    { do { if (!(0+lex->tk==(LEX_R_TRUE))) jsAssertFail("bin/espruino_embedded.c",10660,""); } while(0);jslGetNextToken(); };
     return (((execInfo.execute)&EXEC_RUN_MASK)==EXEC_YES) ? jsvNewFromBool(true) : 0;
   } else if (lex->tk==LEX_R_FALSE) {
-    { do { if (!(0+lex->tk==(LEX_R_FALSE))) jsAssertFail("bin/espruino_embedded.c",10661,""); } while(0);jslGetNextToken(); };
+    { do { if (!(0+lex->tk==(LEX_R_FALSE))) jsAssertFail("bin/espruino_embedded.c",10663,""); } while(0);jslGetNextToken(); };
     return (((execInfo.execute)&EXEC_RUN_MASK)==EXEC_YES) ? jsvNewFromBool(false) : 0;
   } else if (lex->tk==LEX_R_NULL) {
-    { do { if (!(0+lex->tk==(LEX_R_NULL))) jsAssertFail("bin/espruino_embedded.c",10664,""); } while(0);jslGetNextToken(); };
+    { do { if (!(0+lex->tk==(LEX_R_NULL))) jsAssertFail("bin/espruino_embedded.c",10666,""); } while(0);jslGetNextToken(); };
     return (((execInfo.execute)&EXEC_RUN_MASK)==EXEC_YES) ? jsvNewWithFlags(JSV_NULL) : 0;
   } else if (lex->tk==LEX_R_UNDEFINED) {
-    { do { if (!(0+lex->tk==(LEX_R_UNDEFINED))) jsAssertFail("bin/espruino_embedded.c",10667,""); } while(0);jslGetNextToken(); };
+    { do { if (!(0+lex->tk==(LEX_R_UNDEFINED))) jsAssertFail("bin/espruino_embedded.c",10669,""); } while(0);jslGetNextToken(); };
     return 0;
   } else if (lex->tk==LEX_STR) {
     JsVar *a = 0;
     if ((((execInfo.execute)&EXEC_RUN_MASK)==EXEC_YES)) {
       a = jslGetTokenValueAsVar();
     }
-    { do { if (!(0+lex->tk==(LEX_STR))) jsAssertFail("bin/espruino_embedded.c",10678,""); } while(0);jslGetNextToken(); };
+    { do { if (!(0+lex->tk==(LEX_STR))) jsAssertFail("bin/espruino_embedded.c",10680,""); } while(0);jslGetNextToken(); };
     return a;
   } else if (lex->tk==LEX_TEMPLATE_LITERAL) {
     return jspeTemplateLiteral();
@@ -8936,7 +8932,7 @@ __attribute__ ((noinline)) JsVar *jspeFactor() {
       a = jswrap_regexp_constructor(regexSource, flags);
       jsvUnLock3(regex, flags, regexSource);
     }
-    { do { if (!(0+lex->tk==(LEX_REGEX))) jsAssertFail("bin/espruino_embedded.c",10708,""); } while(0);jslGetNextToken(); };
+    { do { if (!(0+lex->tk==(LEX_REGEX))) jsAssertFail("bin/espruino_embedded.c",10710,""); } while(0);jslGetNextToken(); };
     return a;
   } else if (lex->tk=='{') {
     if (!jspCheckStackPosition()) return 0;
@@ -8946,14 +8942,14 @@ __attribute__ ((noinline)) JsVar *jspeFactor() {
     return jspeFactorArray();
   } else if (lex->tk==LEX_R_FUNCTION) {
     if (!jspCheckStackPosition()) return 0;
-    { do { if (!(0+lex->tk==(LEX_R_FUNCTION))) jsAssertFail("bin/espruino_embedded.c",10718,""); } while(0);jslGetNextToken(); };
+    { do { if (!(0+lex->tk==(LEX_R_FUNCTION))) jsAssertFail("bin/espruino_embedded.c",10720,""); } while(0);jslGetNextToken(); };
     return jspeFunctionDefinition(true);
   } else if (lex->tk==LEX_R_CLASS) {
     if (!jspCheckStackPosition()) return 0;
-    { do { if (!(0+lex->tk==(LEX_R_CLASS))) jsAssertFail("bin/espruino_embedded.c",10723,""); } while(0);jslGetNextToken(); };
+    { do { if (!(0+lex->tk==(LEX_R_CLASS))) jsAssertFail("bin/espruino_embedded.c",10725,""); } while(0);jslGetNextToken(); };
     return jspeClassDefinition(true);
   } else if (lex->tk==LEX_R_THIS) {
-    { do { if (!(0+lex->tk==(LEX_R_THIS))) jsAssertFail("bin/espruino_embedded.c",10728,""); } while(0);jslGetNextToken(); };
+    { do { if (!(0+lex->tk==(LEX_R_THIS))) jsAssertFail("bin/espruino_embedded.c",10730,""); } while(0);jslGetNextToken(); };
     return jsvLockAgain( execInfo.thisVar ? execInfo.thisVar : execInfo.root );
   } else if (lex->tk==LEX_R_DELETE) {
     if (!jspCheckStackPosition()) return 0;
@@ -8963,7 +8959,7 @@ __attribute__ ((noinline)) JsVar *jspeFactor() {
     return jspeFactorTypeOf();
   } else if (lex->tk==LEX_R_VOID) {
     if (!jspCheckStackPosition()) return 0;
-    { do { if (!(0+lex->tk==(LEX_R_VOID))) jsAssertFail("bin/espruino_embedded.c",10738,""); } while(0);jslGetNextToken(); };
+    { do { if (!(0+lex->tk==(LEX_R_VOID))) jsAssertFail("bin/espruino_embedded.c",10740,""); } while(0);jslGetNextToken(); };
     jsvUnLock(jspeUnaryExpression());
     return 0;
   }
@@ -8974,7 +8970,7 @@ __attribute__ ((noinline)) JsVar *jspeFactor() {
 __attribute__ ((noinline)) JsVar *__jspePostfixExpression(JsVar *a) {
   while (lex->tk==LEX_PLUSPLUS || lex->tk==LEX_MINUSMINUS) {
     int op = lex->tk;
-    { do { if (!(0+lex->tk==(op))) jsAssertFail("bin/espruino_embedded.c",10750,""); } while(0);jslGetNextToken(); };
+    { do { if (!(0+lex->tk==(op))) jsAssertFail("bin/espruino_embedded.c",10752,""); } while(0);jslGetNextToken(); };
     if ((((execInfo.execute)&EXEC_RUN_MASK)==EXEC_YES)) {
       JsVar *one = jsvNewFromInteger(1);
       JsVar *oldValue = jsvAsNumberAndUnLock(jsvSkipName(a));
@@ -8992,7 +8988,7 @@ __attribute__ ((noinline)) JsVar *jspePostfixExpression() {
   JsVar *a;
   if (lex->tk==LEX_PLUSPLUS || lex->tk==LEX_MINUSMINUS) {
     int op = lex->tk;
-    { do { if (!(0+lex->tk==(op))) jsAssertFail("bin/espruino_embedded.c",10773,""); } while(0);jslGetNextToken(); };
+    { do { if (!(0+lex->tk==(op))) jsAssertFail("bin/espruino_embedded.c",10775,""); } while(0);jslGetNextToken(); };
     a = jspePostfixExpression();
     if ((((execInfo.execute)&EXEC_RUN_MASK)==EXEC_YES)) {
       JsVar *one = jsvNewFromInteger(1);
@@ -9008,7 +9004,7 @@ __attribute__ ((noinline)) JsVar *jspePostfixExpression() {
 __attribute__ ((noinline)) JsVar *jspeUnaryExpression() {
   if (lex->tk=='!' || lex->tk=='~' || lex->tk=='-' || lex->tk=='+') {
     short tk = lex->tk;
-    { do { if (!(0+lex->tk==(tk))) jsAssertFail("bin/espruino_embedded.c",10791,""); } while(0);jslGetNextToken(); };
+    { do { if (!(0+lex->tk==(tk))) jsAssertFail("bin/espruino_embedded.c",10793,""); } while(0);jslGetNextToken(); };
     if (!(((execInfo.execute)&EXEC_RUN_MASK)==EXEC_YES)) {
       return jspeUnaryExpression();
     }
@@ -9025,7 +9021,7 @@ __attribute__ ((noinline)) JsVar *jspeUnaryExpression() {
         return jsvAsNumberAndUnLock(v);
       }
     }
-    do { if (!(0)) jsAssertFail("bin/espruino_embedded.c",10808,""); } while(0);
+    do { if (!(0)) jsAssertFail("bin/espruino_embedded.c",10810,""); } while(0);
     return 0;
   } else
     return jspePostfixExpression();
@@ -9063,7 +9059,7 @@ __attribute__ ((noinline)) JsVar *__jspeBinaryExpression(JsVar *a, unsigned int 
   unsigned int precedence = jspeGetBinaryExpressionPrecedence(lex->tk);
   while (precedence && precedence>lastPrecedence) {
     int op = lex->tk;
-    { do { if (!(0+lex->tk==(op))) jsAssertFail("bin/espruino_embedded.c",10858,""); } while(0);jslGetNextToken(); };
+    { do { if (!(0+lex->tk==(op))) jsAssertFail("bin/espruino_embedded.c",10860,""); } while(0);jslGetNextToken(); };
     if ((((execInfo.execute)&EXEC_RUN_MASK)==EXEC_YES)) {
       a = jsvSkipNameAndUnLock(a);
     }
@@ -9171,7 +9167,7 @@ JsVar *jspeBinaryExpression() {
 }
 __attribute__ ((noinline)) JsVar *__jspeConditionalExpression(JsVar *lhs) {
   if (lex->tk=='?') {
-    { do { if (!(0+lex->tk==('?'))) jsAssertFail("bin/espruino_embedded.c",10979,""); } while(0);jslGetNextToken(); };
+    { do { if (!(0+lex->tk==('?'))) jsAssertFail("bin/espruino_embedded.c",10981,""); } while(0);jslGetNextToken(); };
     if (!(((execInfo.execute)&EXEC_RUN_MASK)==EXEC_YES)) {
       jsvUnLock(jspeAssignmentExpression());
       { if (!jslMatch((':'))) { ; return 0; } };
@@ -9209,7 +9205,7 @@ __attribute__ ((noinline)) JsVar *__jspeAssignmentExpression(JsVar *lhs) {
       lex->tk==LEX_LSHIFTEQUAL || lex->tk==LEX_RSHIFTUNSIGNEDEQUAL) {
     JsVar *rhs;
     int op = lex->tk;
-    { do { if (!(0+lex->tk==(op))) jsAssertFail("bin/espruino_embedded.c",11022,""); } while(0);jslGetNextToken(); };
+    { do { if (!(0+lex->tk==(op))) jsAssertFail("bin/espruino_embedded.c",11024,""); } while(0);jslGetNextToken(); };
     rhs = jspeAssignmentExpression();
     rhs = jsvSkipNameAndUnLock(rhs);
     if ((((execInfo.execute)&EXEC_RUN_MASK)==EXEC_YES)) {
@@ -9265,7 +9261,7 @@ __attribute__ ((noinline)) JsVar *jspeExpression() {
     if (lex->tk!=',') return a;
     jsvCheckReferenceError(a);
     jsvUnLock(a);
-    { do { if (!(0+lex->tk==(','))) jsAssertFail("bin/espruino_embedded.c",11088,""); } while(0);jslGetNextToken(); };
+    { do { if (!(0+lex->tk==(','))) jsAssertFail("bin/espruino_embedded.c",11090,""); } while(0);jslGetNextToken(); };
   }
   return 0;
 }
@@ -9279,7 +9275,7 @@ __attribute__ ((noinline)) void jspeSkipBlock() {
       brackets--;
       if (!brackets) break;
     }
-    { do { if (!(0+lex->tk==(lex->tk))) jsAssertFail("bin/espruino_embedded.c",11107,""); } while(0);jslGetNextToken(); };
+    { do { if (!(0+lex->tk==(lex->tk))) jsAssertFail("bin/espruino_embedded.c",11109,""); } while(0);jslGetNextToken(); };
   }
   execInfo.execute = oldExec;
 }
@@ -9337,14 +9333,14 @@ __attribute__ ((noinline)) JsVar *jspParse() {
   while (!(((execInfo.execute)&EXEC_NO_PARSE_MASK)!=0) && lex->tk != LEX_EOF) {
     jsvUnLock(v);
     v = jspeBlockOrStatement();
-    while (lex->tk==';') { do { if (!(0+lex->tk==(';'))) jsAssertFail("bin/espruino_embedded.c",11184,""); } while(0);jslGetNextToken(); };
+    while (lex->tk==';') { do { if (!(0+lex->tk==(';'))) jsAssertFail("bin/espruino_embedded.c",11186,""); } while(0);jslGetNextToken(); };
     jsvCheckReferenceError(v);
   }
   return v;
 }
 __attribute__ ((noinline)) JsVar *jspeStatementVar() {
   JsVar *lastDefined = 0;
-  do { if (!(lex->tk==LEX_R_VAR || lex->tk==LEX_R_LET || lex->tk==LEX_R_CONST)) jsAssertFail("bin/espruino_embedded.c",11195,""); } while(0);
+  do { if (!(lex->tk==LEX_R_VAR || lex->tk==LEX_R_LET || lex->tk==LEX_R_CONST)) jsAssertFail("bin/espruino_embedded.c",11197,""); } while(0);
   bool isBlockScoped = (lex->tk==LEX_R_LET || lex->tk==LEX_R_CONST) && execInfo.blockCount;
   bool isConstant = lex->tk==LEX_R_CONST;
   jslGetNextToken();
@@ -9390,7 +9386,7 @@ __attribute__ ((noinline)) JsVar *jspeStatementVar() {
 __attribute__ ((noinline)) JsVar *jspeStatementIf() {
   bool cond;
   JsVar *var, *result = 0;
-  { do { if (!(0+lex->tk==(LEX_R_IF))) jsAssertFail("bin/espruino_embedded.c",11254,""); } while(0);jslGetNextToken(); };
+  { do { if (!(0+lex->tk==(LEX_R_IF))) jsAssertFail("bin/espruino_embedded.c",11256,""); } while(0);jslGetNextToken(); };
   { if (!jslMatch(('('))) { ; return 0; } };
   var = jspeExpression();
   if ((((execInfo.execute)&EXEC_NO_PARSE_MASK)!=0)) return var;
@@ -9411,9 +9407,9 @@ __attribute__ ((noinline)) JsVar *jspeStatementIf() {
   } else {
     result = a;
   }
-  if (lex->tk==';') { do { if (!(0+lex->tk==(';'))) jsAssertFail("bin/espruino_embedded.c",11278,""); } while(0);jslGetNextToken(); };
+  if (lex->tk==';') { do { if (!(0+lex->tk==(';'))) jsAssertFail("bin/espruino_embedded.c",11280,""); } while(0);jslGetNextToken(); };
   if (lex->tk==LEX_R_ELSE) {
-    { do { if (!(0+lex->tk==(LEX_R_ELSE))) jsAssertFail("bin/espruino_embedded.c",11280,""); } while(0);jslGetNextToken(); };
+    { do { if (!(0+lex->tk==(LEX_R_ELSE))) jsAssertFail("bin/espruino_embedded.c",11282,""); } while(0);jslGetNextToken(); };
     JsExecFlags oldExecute = execInfo.execute;
     if (cond) jspSetNoExecute();
     JsVar *a = 0;
@@ -9431,7 +9427,7 @@ __attribute__ ((noinline)) JsVar *jspeStatementIf() {
   return result;
 }
 __attribute__ ((noinline)) JsVar *jspeStatementSwitch() {
-  { do { if (!(0+lex->tk==(LEX_R_SWITCH))) jsAssertFail("bin/espruino_embedded.c",11299,""); } while(0);jslGetNextToken(); };
+  { do { if (!(0+lex->tk==(LEX_R_SWITCH))) jsAssertFail("bin/espruino_embedded.c",11301,""); } while(0);jslGetNextToken(); };
   { if (!jslMatch(('('))) { ; return 0; } };
   JsVar *switchOn = jspeExpression();
   JsExecFlags preservedExecState = execInfo.execute&(EXEC_IN_LOOP|EXEC_DEBUGGER_MASK);
@@ -9468,7 +9464,7 @@ __attribute__ ((noinline)) JsVar *jspeStatementSwitch() {
   }
   execInfo.execute = (execInfo.execute&(JsExecFlags)(~EXEC_SAVE_RESTORE_MASK)) | (oldExecute&EXEC_SAVE_RESTORE_MASK);;
   if (lex->tk==LEX_R_DEFAULT) {
-    { do { if (!(0+lex->tk==(LEX_R_DEFAULT))) jsAssertFail("bin/espruino_embedded.c",11345,""); } while(0);jslGetNextToken(); };
+    { do { if (!(0+lex->tk==(LEX_R_DEFAULT))) jsAssertFail("bin/espruino_embedded.c",11347,""); } while(0);jslGetNextToken(); };
     { if (!jslMatch((':'))) { ; return 0; } };
     JsExecFlags oldExecute = execInfo.execute;
     if (!executeDefault) jspSetNoExecute();
@@ -9503,7 +9499,7 @@ __attribute__ ((noinline)) JsVar *jspeStatementDoOrWhile(bool isWhile) {
   bool wasInLoop = (execInfo.execute&EXEC_IN_LOOP)!=0;
   JslCharPos whileBodyStart;
   if (isWhile) {
-    { do { if (!(0+lex->tk==(LEX_R_WHILE))) jsAssertFail("bin/espruino_embedded.c",11385,""); } while(0);jslGetNextToken(); };
+    { do { if (!(0+lex->tk==(LEX_R_WHILE))) jsAssertFail("bin/espruino_embedded.c",11387,""); } while(0);jslGetNextToken(); };
     jslCharPosFromLex(&whileCondStart);
     { if (!jslMatch(('('))) { jslCharPosFree(&whileCondStart);; return 0; } };
     cond = jspeExpression();
@@ -9577,7 +9573,7 @@ __attribute__ ((noinline)) JsVar *jspGetBuiltinPrototype(JsVar *obj) {
   return 0;
 }
 __attribute__ ((noinline)) JsVar *jspeStatementFor() {
-  { do { if (!(0+lex->tk==(LEX_R_FOR))) jsAssertFail("bin/espruino_embedded.c",11474,""); } while(0);jslGetNextToken(); };
+  { do { if (!(0+lex->tk==(LEX_R_FOR))) jsAssertFail("bin/espruino_embedded.c",11476,""); } while(0);jslGetNextToken(); };
   { if (!jslMatch(('('))) { ; return 0; } };
   bool wasInLoop = (execInfo.execute&EXEC_IN_LOOP)!=0;
   execInfo.execute |= EXEC_FOR_INIT;
@@ -9600,7 +9596,7 @@ __attribute__ ((noinline)) JsVar *jspeStatementFor() {
       jspeBlockEnd(oldBlockScope);
       return 0;
     }
-    { do { if (!(0+lex->tk==(lex->tk))) jsAssertFail("bin/espruino_embedded.c",11503,""); } while(0);jslGetNextToken(); };
+    { do { if (!(0+lex->tk==(lex->tk))) jsAssertFail("bin/espruino_embedded.c",11505,""); } while(0);jslGetNextToken(); };
     JsVar *array = jsvSkipNameAndUnLock(jspeExpression());
     JslCharPos forBodyStart;
     jslCharPosFromLex(&forBodyStart);
@@ -9640,10 +9636,10 @@ __attribute__ ((noinline)) JsVar *jspeStatementFor() {
               iteratorValue = jsvIteratorGetValue(&it);
             } else {
               iteratorValue = jsvAsString(loopIndexVar);
-              do { if (!(jsvGetRefs(iteratorValue)==0)) jsAssertFail("bin/espruino_embedded.c",11549,""); } while(0);
+              do { if (!(jsvGetRefs(iteratorValue)==0)) jsAssertFail("bin/espruino_embedded.c",11551,""); } while(0);
             }
             if (isForOf || iteratorValue) {
-              do { if (!(!jsvIsName(iteratorValue))) jsAssertFail("bin/espruino_embedded.c",11553,""); } while(0);
+              do { if (!(!jsvIsName(iteratorValue))) jsAssertFail("bin/espruino_embedded.c",11555,""); } while(0);
               if (startsWithConst) forStatement->flags &= ~JSV_CONSTANT;
               jsvReplaceWithOrAddToRoot(forStatement, iteratorValue);
               if (startsWithConst) forStatement->flags |= JSV_CONSTANT;
@@ -9752,13 +9748,13 @@ __attribute__ ((noinline)) JsVar *jspeStatementFor() {
   return 0;
 }
 __attribute__ ((noinline)) JsVar *jspeStatementTry() {
-  { do { if (!(0+lex->tk==(LEX_R_TRY))) jsAssertFail("bin/espruino_embedded.c",11687,""); } while(0);jslGetNextToken(); };
+  { do { if (!(0+lex->tk==(LEX_R_TRY))) jsAssertFail("bin/espruino_embedded.c",11689,""); } while(0);jslGetNextToken(); };
   bool shouldExecuteBefore = (((execInfo.execute)&EXEC_RUN_MASK)==EXEC_YES);
   jspeBlock();
   bool hadException = shouldExecuteBefore && ((execInfo.execute & EXEC_EXCEPTION)!=0);
   bool hadCatch = false;
   if (lex->tk == LEX_R_CATCH) {
-    { do { if (!(0+lex->tk==(LEX_R_CATCH))) jsAssertFail("bin/espruino_embedded.c",11694,""); } while(0);jslGetNextToken(); };
+    { do { if (!(0+lex->tk==(LEX_R_CATCH))) jsAssertFail("bin/espruino_embedded.c",11696,""); } while(0);jslGetNextToken(); };
     hadCatch = true;
     JsVar *exceptionVar = 0;
     JsVar *scope = 0;
@@ -9808,7 +9804,7 @@ __attribute__ ((noinline)) JsVar *jspeStatementTry() {
 }
 __attribute__ ((noinline)) JsVar *jspeStatementReturn() {
   JsVar *result = 0;
-  { do { if (!(0+lex->tk==(LEX_R_RETURN))) jsAssertFail("bin/espruino_embedded.c",11752,""); } while(0);jslGetNextToken(); };
+  { do { if (!(0+lex->tk==(LEX_R_RETURN))) jsAssertFail("bin/espruino_embedded.c",11754,""); } while(0);jslGetNextToken(); };
   if (lex->tk != ';' && lex->tk != '}') {
     result = jsvSkipNameAndUnLock(jspeExpression());
   }
@@ -9827,7 +9823,7 @@ __attribute__ ((noinline)) JsVar *jspeStatementReturn() {
 }
 __attribute__ ((noinline)) JsVar *jspeStatementThrow() {
   JsVar *result = 0;
-  { do { if (!(0+lex->tk==(LEX_R_THROW))) jsAssertFail("bin/espruino_embedded.c",11773,""); } while(0);jslGetNextToken(); };
+  { do { if (!(0+lex->tk==(LEX_R_THROW))) jsAssertFail("bin/espruino_embedded.c",11775,""); } while(0);jslGetNextToken(); };
   result = jsvSkipNameAndUnLock(jspeExpression());
   if ((((execInfo.execute)&EXEC_RUN_MASK)==EXEC_YES)) {
     jspSetException(result);
@@ -9838,7 +9834,7 @@ __attribute__ ((noinline)) JsVar *jspeStatementThrow() {
 __attribute__ ((noinline)) JsVar *jspeStatementFunctionDecl(bool isClass) {
   JsVar *funcName = 0;
   JsVar *funcVar;
-  { do { if (!(0+lex->tk==(isClass ? LEX_R_CLASS : LEX_R_FUNCTION))) jsAssertFail("bin/espruino_embedded.c",11787,""); } while(0);jslGetNextToken(); };
+  { do { if (!(0+lex->tk==(isClass ? LEX_R_CLASS : LEX_R_FUNCTION))) jsAssertFail("bin/espruino_embedded.c",11789,""); } while(0);jslGetNextToken(); };
   bool actuallyCreateFunction = (((execInfo.execute)&EXEC_RUN_MASK)==EXEC_YES);
   if (actuallyCreateFunction) {
     funcName = jsvNewNameFromString(jslGetTokenValueAsString());
@@ -9867,9 +9863,6 @@ __attribute__ ((noinline)) JsVar *jspeStatementFunctionDecl(bool isClass) {
 __attribute__ ((noinline)) JsVar *jspeStatement() {
   if (execInfo.execute&(EXEC_RUN_INTERRUPT_JS
   )) {
-    if (execInfo.execute&EXEC_RUN_INTERRUPT_JS) {
-      jstRunInterruptingJS();
-    }
   }
   if (lex->tk==LEX_ID ||
       lex->tk==LEX_INT ||
@@ -9901,7 +9894,7 @@ __attribute__ ((noinline)) JsVar *jspeStatement() {
     jspeBlock();
     return 0;
   } else if (lex->tk==';') {
-    { do { if (!(0+lex->tk==(';'))) jsAssertFail("bin/espruino_embedded.c",11883,""); } while(0);jslGetNextToken(); };
+    { do { if (!(0+lex->tk==(';'))) jsAssertFail("bin/espruino_embedded.c",11887,""); } while(0);jslGetNextToken(); };
     return 0;
   } else if (lex->tk==LEX_R_VAR ||
             lex->tk==LEX_R_LET ||
@@ -9926,7 +9919,7 @@ __attribute__ ((noinline)) JsVar *jspeStatement() {
   } else if (lex->tk==LEX_R_CLASS) {
       return jspeStatementFunctionDecl(true );
   } else if (lex->tk==LEX_R_CONTINUE) {
-    { do { if (!(0+lex->tk==(LEX_R_CONTINUE))) jsAssertFail("bin/espruino_embedded.c",11910,""); } while(0);jslGetNextToken(); };
+    { do { if (!(0+lex->tk==(LEX_R_CONTINUE))) jsAssertFail("bin/espruino_embedded.c",11914,""); } while(0);jslGetNextToken(); };
     if ((((execInfo.execute)&EXEC_RUN_MASK)==EXEC_YES)) {
       if (!(execInfo.execute & EXEC_IN_LOOP))
         jsExceptionHere(JSET_SYNTAXERROR, "CONTINUE statement outside of FOR or WHILE loop");
@@ -9934,7 +9927,7 @@ __attribute__ ((noinline)) JsVar *jspeStatement() {
         execInfo.execute = (execInfo.execute & (JsExecFlags)~EXEC_RUN_MASK) | EXEC_CONTINUE;
     }
   } else if (lex->tk==LEX_R_BREAK) {
-    { do { if (!(0+lex->tk==(LEX_R_BREAK))) jsAssertFail("bin/espruino_embedded.c",11918,""); } while(0);jslGetNextToken(); };
+    { do { if (!(0+lex->tk==(LEX_R_BREAK))) jsAssertFail("bin/espruino_embedded.c",11922,""); } while(0);jslGetNextToken(); };
     if ((((execInfo.execute)&EXEC_RUN_MASK)==EXEC_YES)) {
       if (!(execInfo.execute & (EXEC_IN_LOOP|EXEC_IN_SWITCH)))
         jsExceptionHere(JSET_SYNTAXERROR, "BREAK statement outside of SWITCH, FOR or WHILE loop");
@@ -9944,7 +9937,7 @@ __attribute__ ((noinline)) JsVar *jspeStatement() {
   } else if (lex->tk==LEX_R_SWITCH) {
     return jspeStatementSwitch();
   } else if (lex->tk==LEX_R_DEBUGGER) {
-    { do { if (!(0+lex->tk==(LEX_R_DEBUGGER))) jsAssertFail("bin/espruino_embedded.c",11928,""); } while(0);jslGetNextToken(); };
+    { do { if (!(0+lex->tk==(LEX_R_DEBUGGER))) jsAssertFail("bin/espruino_embedded.c",11932,""); } while(0);jslGetNextToken(); };
   } else { if (!jslMatch((LEX_EOF))) { ; return 0; } };
   return 0;
 }
@@ -10027,9 +10020,9 @@ void jspSoftInit() {
   execInfo.blockCount = 0;
 }
 void jspSoftKill() {
-  do { if (!(execInfo.baseScope==execInfo.root)) jsAssertFail("bin/espruino_embedded.c",12060,""); } while(0);
-  do { if (!(execInfo.blockScope==0)) jsAssertFail("bin/espruino_embedded.c",12061,""); } while(0);
-  do { if (!(execInfo.blockCount==0)) jsAssertFail("bin/espruino_embedded.c",12062,""); } while(0);
+  do { if (!(execInfo.baseScope==execInfo.root)) jsAssertFail("bin/espruino_embedded.c",12064,""); } while(0);
+  do { if (!(execInfo.blockScope==0)) jsAssertFail("bin/espruino_embedded.c",12065,""); } while(0);
+  do { if (!(execInfo.blockCount==0)) jsAssertFail("bin/espruino_embedded.c",12066,""); } while(0);
   jsvUnLock(execInfo.scopesVar);
   execInfo.scopesVar = 0;
   jsvUnLock(execInfo.hiddenRoot);
@@ -10048,7 +10041,7 @@ void jspKill() {
 }
 JsVar *jspEvaluateExpressionVar(JsVar *str) {
   JsLex lex;
-  do { if (!(jsvIsString(str))) jsAssertFail("bin/espruino_embedded.c",12089,""); } while(0);
+  do { if (!(jsvIsString(str))) jsAssertFail("bin/espruino_embedded.c",12093,""); } while(0);
   JsLex *oldLex = jslSetLex(&lex);
   jslInit(str);
   JsVar *v = jspeExpression();
@@ -10058,7 +10051,7 @@ JsVar *jspEvaluateExpressionVar(JsVar *str) {
 }
 JsVar *jspEvaluateVar(JsVar *str, JsVar *scope, const char *stackTraceName) {
   JsLex lex;
-  do { if (!(jsvIsString(str))) jsAssertFail("bin/espruino_embedded.c",12104,""); } while(0);
+  do { if (!(jsvIsString(str))) jsAssertFail("bin/espruino_embedded.c",12108,""); } while(0);
   JsLex *oldLex = jslSetLex(&lex);
   jslInit(str);
   lex.lastLex = oldLex;
@@ -10133,7 +10126,7 @@ JsVar *jspExecuteFunction(JsVar *func, JsVar *thisArg, int argCount, JsVar **arg
   return result;
 }
 JsVar *jspEvaluateModule(JsVar *moduleContents) {
-  do { if (!(jsvIsString(moduleContents) || jsvIsFunction(moduleContents))) jsAssertFail("bin/espruino_embedded.c",12211,""); } while(0);
+  do { if (!(jsvIsString(moduleContents) || jsvIsFunction(moduleContents))) jsAssertFail("bin/espruino_embedded.c",12215,""); } while(0);
   if (jsvIsFunction(moduleContents)) {
     moduleContents = jsvObjectGetChildIfExists(moduleContents,"\xFF""cod");
     if (!jsvIsString(moduleContents)) {
@@ -10156,8 +10149,8 @@ JsVar *jspEvaluateModule(JsVar *moduleContents) {
   execInfo.blockCount = 0;
   execInfo.thisVar = scopeExports;
   jsvUnLock(jspEvaluateVar(moduleContents, scope, "module"));
-  do { if (!(execInfo.blockCount==0)) jsAssertFail("bin/espruino_embedded.c",12238,""); } while(0);
-  do { if (!(execInfo.blockScope==0)) jsAssertFail("bin/espruino_embedded.c",12239,""); } while(0);
+  do { if (!(execInfo.blockCount==0)) jsAssertFail("bin/espruino_embedded.c",12242,""); } while(0);
+  do { if (!(execInfo.blockScope==0)) jsAssertFail("bin/espruino_embedded.c",12243,""); } while(0);
   JsExecFlags hasError = (execInfo.execute)&EXEC_ERROR_MASK;
   execInfo = oldExecInfo;
   execInfo.execute |= hasError;
@@ -10252,12 +10245,6 @@ JsVar *jswrap_date_toLocalISOString(JsVar *parent);
 JsVarFloat jswrap_date_parse(JsVar *str);
 JsVar *jswrap_number_constructor(JsVar *val);
 JsVar *jswrap_number_toFixed(JsVar *parent, int decimals);
-JsVar *jswrap_timer_list();
-JsVar *jswrap_timer_get(int id);
-int jswrap_timer_add(JsVar *timer);
-bool jswrap_timer_remove(int id);
-void jstOnRunInterruptJSEvent(const uint8_t *eventData, unsigned int eventLen);
-void jstRunInterruptingJS();
 JsVar *jswrap_require(JsVar *modulename);
 JsVar *jswrap_modules_getCached();
 void jswrap_modules_removeCached(JsVar *id);
@@ -10446,10 +10433,10 @@ static JsVarFloat gen_jswrap_Math_acos(JsVarFloat x) {
   return ((3.141592653589793)/2) - jswrap_math_asin(x);
 }
 static JsVarFloat gen_jswrap_Math_random() {
-  return (JsVarFloat)rand() / (JsVarFloat)((unsigned)RAND_MAX+1);
+  return (JsVarFloat)ejs_rand() / (JsVarFloat)((unsigned)RAND_MAX+1);
 }
 static JsVarInt gen_jswrap_Math_randInt(JsVarInt range) {
-  return (range>0) ? (rand() % range) : (rand()^(rand()<<1));
+  return (range>0) ? (ejs_rand() % range) : (ejs_rand()^(ejs_rand()<<1));
 }
 static JsVarFloat gen_jswrap_Math_tan(JsVarFloat theta) {
   return jswrap_math_sin(theta) / jswrap_math_sin(theta+((3.141592653589793)/2));
@@ -10467,9 +10454,6 @@ static JsVar* gen_jswrap_console_console() {
   return NULL;
 }
 static JsVar* gen_jswrap_JSON_JSON() {
-  return NULL;
-}
-static JsVar* gen_jswrap_timer_timer() {
   return NULL;
 }
 static JsVar* gen_jswrap_Modules_Modules() {
@@ -10755,13 +10739,6 @@ static const JswSymPtr jswSymbols_RegExp_proto[] = {
   { 5, JSWAT_BOOL | JSWAT_THIS_ARG | (JSWAT_JSVAR << ((((JSWAT_MASK+1)== 1)? 0: ((JSWAT_MASK+1)== 2)? 1: ((JSWAT_MASK+1)== 4)? 2: ((JSWAT_MASK+1)== 8)? 3: ((JSWAT_MASK+1)== 16)? 4: ((JSWAT_MASK+1)== 32)? 5: ((JSWAT_MASK+1)== 64)? 6: ((JSWAT_MASK+1)== 128)? 7: ((JSWAT_MASK+1)== 256)? 8: ((JSWAT_MASK+1)== 512)? 9: ((JSWAT_MASK+1)== 1024)?10: ((JSWAT_MASK+1)== 2048)?11: ((JSWAT_MASK+1)== 4096)?12: ((JSWAT_MASK+1)== 8192)?13: ((JSWAT_MASK+1)==16384)?14: ((JSWAT_MASK+1)==32768)?15:10000 )*1)), (void*)jswrap_regexp_test}
 };
 static const unsigned char jswSymbolIndex_RegExp_proto = 20;
-static const JswSymPtr jswSymbols_timer[] = {
-  { 0, JSWAT_INT32 | (JSWAT_JSVAR << ((((JSWAT_MASK+1)== 1)? 0: ((JSWAT_MASK+1)== 2)? 1: ((JSWAT_MASK+1)== 4)? 2: ((JSWAT_MASK+1)== 8)? 3: ((JSWAT_MASK+1)== 16)? 4: ((JSWAT_MASK+1)== 32)? 5: ((JSWAT_MASK+1)== 64)? 6: ((JSWAT_MASK+1)== 128)? 7: ((JSWAT_MASK+1)== 256)? 8: ((JSWAT_MASK+1)== 512)? 9: ((JSWAT_MASK+1)== 1024)?10: ((JSWAT_MASK+1)== 2048)?11: ((JSWAT_MASK+1)== 4096)?12: ((JSWAT_MASK+1)== 8192)?13: ((JSWAT_MASK+1)==16384)?14: ((JSWAT_MASK+1)==32768)?15:10000 )*1)), (void*)jswrap_timer_add},
-  { 4, JSWAT_JSVAR | (JSWAT_INT32 << ((((JSWAT_MASK+1)== 1)? 0: ((JSWAT_MASK+1)== 2)? 1: ((JSWAT_MASK+1)== 4)? 2: ((JSWAT_MASK+1)== 8)? 3: ((JSWAT_MASK+1)== 16)? 4: ((JSWAT_MASK+1)== 32)? 5: ((JSWAT_MASK+1)== 64)? 6: ((JSWAT_MASK+1)== 128)? 7: ((JSWAT_MASK+1)== 256)? 8: ((JSWAT_MASK+1)== 512)? 9: ((JSWAT_MASK+1)== 1024)?10: ((JSWAT_MASK+1)== 2048)?11: ((JSWAT_MASK+1)== 4096)?12: ((JSWAT_MASK+1)== 8192)?13: ((JSWAT_MASK+1)==16384)?14: ((JSWAT_MASK+1)==32768)?15:10000 )*1)), (void*)jswrap_timer_get},
-  { 8, JSWAT_JSVAR, (void*)jswrap_timer_list},
-  { 13, JSWAT_BOOL | (JSWAT_INT32 << ((((JSWAT_MASK+1)== 1)? 0: ((JSWAT_MASK+1)== 2)? 1: ((JSWAT_MASK+1)== 4)? 2: ((JSWAT_MASK+1)== 8)? 3: ((JSWAT_MASK+1)== 16)? 4: ((JSWAT_MASK+1)== 32)? 5: ((JSWAT_MASK+1)== 64)? 6: ((JSWAT_MASK+1)== 128)? 7: ((JSWAT_MASK+1)== 256)? 8: ((JSWAT_MASK+1)== 512)? 9: ((JSWAT_MASK+1)== 1024)?10: ((JSWAT_MASK+1)== 2048)?11: ((JSWAT_MASK+1)== 4096)?12: ((JSWAT_MASK+1)== 8192)?13: ((JSWAT_MASK+1)==16384)?14: ((JSWAT_MASK+1)==32768)?15:10000 )*1)), (void*)jswrap_timer_remove}
-};
-static const unsigned char jswSymbolIndex_timer = 21;
 static const JswSymPtr jswSymbols_String_proto[] = {
   { 0, JSWAT_JSVAR | JSWAT_THIS_ARG | (JSWAT_INT32 << ((((JSWAT_MASK+1)== 1)? 0: ((JSWAT_MASK+1)== 2)? 1: ((JSWAT_MASK+1)== 4)? 2: ((JSWAT_MASK+1)== 8)? 3: ((JSWAT_MASK+1)== 16)? 4: ((JSWAT_MASK+1)== 32)? 5: ((JSWAT_MASK+1)== 64)? 6: ((JSWAT_MASK+1)== 128)? 7: ((JSWAT_MASK+1)== 256)? 8: ((JSWAT_MASK+1)== 512)? 9: ((JSWAT_MASK+1)== 1024)?10: ((JSWAT_MASK+1)== 2048)?11: ((JSWAT_MASK+1)== 4096)?12: ((JSWAT_MASK+1)== 8192)?13: ((JSWAT_MASK+1)==16384)?14: ((JSWAT_MASK+1)==32768)?15:10000 )*1)), (void*)jswrap_string_charAt},
   { 7, JSWAT_JSVAR | JSWAT_THIS_ARG | (JSWAT_INT32 << ((((JSWAT_MASK+1)== 1)? 0: ((JSWAT_MASK+1)== 2)? 1: ((JSWAT_MASK+1)== 4)? 2: ((JSWAT_MASK+1)== 8)? 3: ((JSWAT_MASK+1)== 16)? 4: ((JSWAT_MASK+1)== 32)? 5: ((JSWAT_MASK+1)== 64)? 6: ((JSWAT_MASK+1)== 128)? 7: ((JSWAT_MASK+1)== 256)? 8: ((JSWAT_MASK+1)== 512)? 9: ((JSWAT_MASK+1)== 1024)?10: ((JSWAT_MASK+1)== 2048)?11: ((JSWAT_MASK+1)== 4096)?12: ((JSWAT_MASK+1)== 8192)?13: ((JSWAT_MASK+1)==16384)?14: ((JSWAT_MASK+1)==32768)?15:10000 )*1)), (void*)jswrap_string_charCodeAt},
@@ -10787,18 +10764,18 @@ static const JswSymPtr jswSymbols_String_proto[] = {
   { 184, JSWAT_JSVAR | JSWAT_THIS_ARG, (void*)gen_jswrap_String_toUpperCase},
   { 196, JSWAT_JSVAR | JSWAT_THIS_ARG, (void*)jswrap_string_trim}
 };
-static const unsigned char jswSymbolIndex_String_proto = 22;
+static const unsigned char jswSymbolIndex_String_proto = 21;
 static const JswSymPtr jswSymbols_String[] = {
   { 0, JSWAT_JSVAR | (JSWAT_ARGUMENT_ARRAY << ((((JSWAT_MASK+1)== 1)? 0: ((JSWAT_MASK+1)== 2)? 1: ((JSWAT_MASK+1)== 4)? 2: ((JSWAT_MASK+1)== 8)? 3: ((JSWAT_MASK+1)== 16)? 4: ((JSWAT_MASK+1)== 32)? 5: ((JSWAT_MASK+1)== 64)? 6: ((JSWAT_MASK+1)== 128)? 7: ((JSWAT_MASK+1)== 256)? 8: ((JSWAT_MASK+1)== 512)? 9: ((JSWAT_MASK+1)== 1024)?10: ((JSWAT_MASK+1)== 2048)?11: ((JSWAT_MASK+1)== 4096)?12: ((JSWAT_MASK+1)== 8192)?13: ((JSWAT_MASK+1)==16384)?14: ((JSWAT_MASK+1)==32768)?15:10000 )*1)), (void*)jswrap_string_fromCharCode}
 };
-static const unsigned char jswSymbolIndex_String = 23;
+static const unsigned char jswSymbolIndex_String = 22;
 static const JswSymPtr jswSymbols_Modules[] = {
   { 0, JSWAT_VOID | (JSWAT_JSVAR << ((((JSWAT_MASK+1)== 1)? 0: ((JSWAT_MASK+1)== 2)? 1: ((JSWAT_MASK+1)== 4)? 2: ((JSWAT_MASK+1)== 8)? 3: ((JSWAT_MASK+1)== 16)? 4: ((JSWAT_MASK+1)== 32)? 5: ((JSWAT_MASK+1)== 64)? 6: ((JSWAT_MASK+1)== 128)? 7: ((JSWAT_MASK+1)== 256)? 8: ((JSWAT_MASK+1)== 512)? 9: ((JSWAT_MASK+1)== 1024)?10: ((JSWAT_MASK+1)== 2048)?11: ((JSWAT_MASK+1)== 4096)?12: ((JSWAT_MASK+1)== 8192)?13: ((JSWAT_MASK+1)==16384)?14: ((JSWAT_MASK+1)==32768)?15:10000 )*1)) | (JSWAT_JSVAR << ((((JSWAT_MASK+1)== 1)? 0: ((JSWAT_MASK+1)== 2)? 1: ((JSWAT_MASK+1)== 4)? 2: ((JSWAT_MASK+1)== 8)? 3: ((JSWAT_MASK+1)== 16)? 4: ((JSWAT_MASK+1)== 32)? 5: ((JSWAT_MASK+1)== 64)? 6: ((JSWAT_MASK+1)== 128)? 7: ((JSWAT_MASK+1)== 256)? 8: ((JSWAT_MASK+1)== 512)? 9: ((JSWAT_MASK+1)== 1024)?10: ((JSWAT_MASK+1)== 2048)?11: ((JSWAT_MASK+1)== 4096)?12: ((JSWAT_MASK+1)== 8192)?13: ((JSWAT_MASK+1)==16384)?14: ((JSWAT_MASK+1)==32768)?15:10000 )*2)), (void*)jswrap_modules_addCached},
   { 10, JSWAT_JSVAR, (void*)jswrap_modules_getCached},
   { 20, JSWAT_VOID, (void*)jswrap_modules_removeAllCached},
   { 36, JSWAT_VOID | (JSWAT_JSVAR << ((((JSWAT_MASK+1)== 1)? 0: ((JSWAT_MASK+1)== 2)? 1: ((JSWAT_MASK+1)== 4)? 2: ((JSWAT_MASK+1)== 8)? 3: ((JSWAT_MASK+1)== 16)? 4: ((JSWAT_MASK+1)== 32)? 5: ((JSWAT_MASK+1)== 64)? 6: ((JSWAT_MASK+1)== 128)? 7: ((JSWAT_MASK+1)== 256)? 8: ((JSWAT_MASK+1)== 512)? 9: ((JSWAT_MASK+1)== 1024)?10: ((JSWAT_MASK+1)== 2048)?11: ((JSWAT_MASK+1)== 4096)?12: ((JSWAT_MASK+1)== 8192)?13: ((JSWAT_MASK+1)==16384)?14: ((JSWAT_MASK+1)==32768)?15:10000 )*1)), (void*)jswrap_modules_removeCached}
 };
-static const unsigned char jswSymbolIndex_Modules = 24;
+static const unsigned char jswSymbolIndex_Modules = 23;
 static const JswSymPtr jswSymbols_Math[] = {
   { 0, JSWAT_JSVARFLOAT | JSWAT_EXECUTE_IMMEDIATELY, (void*)gen_jswrap_Math_E},
   { 2, JSWAT_JSVARFLOAT | JSWAT_EXECUTE_IMMEDIATELY, (void*)gen_jswrap_Math_LN10},
@@ -10831,12 +10808,12 @@ static const JswSymPtr jswSymbols_Math[] = {
   { 141, JSWAT_JSVARFLOAT | (JSWAT_JSVARFLOAT << ((((JSWAT_MASK+1)== 1)? 0: ((JSWAT_MASK+1)== 2)? 1: ((JSWAT_MASK+1)== 4)? 2: ((JSWAT_MASK+1)== 8)? 3: ((JSWAT_MASK+1)== 16)? 4: ((JSWAT_MASK+1)== 32)? 5: ((JSWAT_MASK+1)== 64)? 6: ((JSWAT_MASK+1)== 128)? 7: ((JSWAT_MASK+1)== 256)? 8: ((JSWAT_MASK+1)== 512)? 9: ((JSWAT_MASK+1)== 1024)?10: ((JSWAT_MASK+1)== 2048)?11: ((JSWAT_MASK+1)== 4096)?12: ((JSWAT_MASK+1)== 8192)?13: ((JSWAT_MASK+1)==16384)?14: ((JSWAT_MASK+1)==32768)?15:10000 )*1)), (void*)gen_jswrap_Math_tan},
   { 145, JSWAT_JSVARFLOAT | (JSWAT_JSVARFLOAT << ((((JSWAT_MASK+1)== 1)? 0: ((JSWAT_MASK+1)== 2)? 1: ((JSWAT_MASK+1)== 4)? 2: ((JSWAT_MASK+1)== 8)? 3: ((JSWAT_MASK+1)== 16)? 4: ((JSWAT_MASK+1)== 32)? 5: ((JSWAT_MASK+1)== 64)? 6: ((JSWAT_MASK+1)== 128)? 7: ((JSWAT_MASK+1)== 256)? 8: ((JSWAT_MASK+1)== 512)? 9: ((JSWAT_MASK+1)== 1024)?10: ((JSWAT_MASK+1)== 2048)?11: ((JSWAT_MASK+1)== 4096)?12: ((JSWAT_MASK+1)== 8192)?13: ((JSWAT_MASK+1)==16384)?14: ((JSWAT_MASK+1)==32768)?15:10000 )*1)) | (JSWAT_JSVARFLOAT << ((((JSWAT_MASK+1)== 1)? 0: ((JSWAT_MASK+1)== 2)? 1: ((JSWAT_MASK+1)== 4)? 2: ((JSWAT_MASK+1)== 8)? 3: ((JSWAT_MASK+1)== 16)? 4: ((JSWAT_MASK+1)== 32)? 5: ((JSWAT_MASK+1)== 64)? 6: ((JSWAT_MASK+1)== 128)? 7: ((JSWAT_MASK+1)== 256)? 8: ((JSWAT_MASK+1)== 512)? 9: ((JSWAT_MASK+1)== 1024)?10: ((JSWAT_MASK+1)== 2048)?11: ((JSWAT_MASK+1)== 4096)?12: ((JSWAT_MASK+1)== 8192)?13: ((JSWAT_MASK+1)==16384)?14: ((JSWAT_MASK+1)==32768)?15:10000 )*2)), (void*)wrapAround}
 };
-static const unsigned char jswSymbolIndex_Math = 25;
+static const unsigned char jswSymbolIndex_Math = 24;
 static const JswSymPtr jswSymbols_heatshrink[] = {
   { 0, JSWAT_JSVAR | (JSWAT_JSVAR << ((((JSWAT_MASK+1)== 1)? 0: ((JSWAT_MASK+1)== 2)? 1: ((JSWAT_MASK+1)== 4)? 2: ((JSWAT_MASK+1)== 8)? 3: ((JSWAT_MASK+1)== 16)? 4: ((JSWAT_MASK+1)== 32)? 5: ((JSWAT_MASK+1)== 64)? 6: ((JSWAT_MASK+1)== 128)? 7: ((JSWAT_MASK+1)== 256)? 8: ((JSWAT_MASK+1)== 512)? 9: ((JSWAT_MASK+1)== 1024)?10: ((JSWAT_MASK+1)== 2048)?11: ((JSWAT_MASK+1)== 4096)?12: ((JSWAT_MASK+1)== 8192)?13: ((JSWAT_MASK+1)==16384)?14: ((JSWAT_MASK+1)==32768)?15:10000 )*1)), (void*)jswrap_heatshrink_compress},
   { 9, JSWAT_JSVAR | (JSWAT_JSVAR << ((((JSWAT_MASK+1)== 1)? 0: ((JSWAT_MASK+1)== 2)? 1: ((JSWAT_MASK+1)== 4)? 2: ((JSWAT_MASK+1)== 8)? 3: ((JSWAT_MASK+1)== 16)? 4: ((JSWAT_MASK+1)== 32)? 5: ((JSWAT_MASK+1)== 64)? 6: ((JSWAT_MASK+1)== 128)? 7: ((JSWAT_MASK+1)== 256)? 8: ((JSWAT_MASK+1)== 512)? 9: ((JSWAT_MASK+1)== 1024)?10: ((JSWAT_MASK+1)== 2048)?11: ((JSWAT_MASK+1)== 4096)?12: ((JSWAT_MASK+1)== 8192)?13: ((JSWAT_MASK+1)==16384)?14: ((JSWAT_MASK+1)==32768)?15:10000 )*1)), (void*)jswrap_heatshrink_decompress}
 };
-static const unsigned char jswSymbolIndex_heatshrink = 26;
+static const unsigned char jswSymbolIndex_heatshrink = 25;
 static const char jswSymbols_global_str[] = "Array\0ArrayBuffer\0ArrayBufferView\0Boolean\0DataView\0Date\0Error\0Float32Array\0Float64Array\0Function\0Infinity\0Int16Array\0Int32Array\0Int8Array\0InternalError\0JSON\0Math\0Modules\0NaN\0Number\0Object\0ReferenceError\0RegExp\0String\0SyntaxError\0TypeError\0Uint16Array\0Uint24Array\0Uint32Array\0Uint8Array\0Uint8ClampedArray\0arguments\0atob\0btoa\0console\0decodeURIComponent\0encodeURIComponent\0eval\0global\0globalThis\0isFinite\0isNaN\0parseFloat\0parseInt\0print\0require\0trace\0";
 static const char jswSymbols_Array_proto_str[] = "concat\0every\0fill\0filter\0find\0findIndex\0forEach\0includes\0indexOf\0join\0length\0map\0pop\0push\0reduce\0reverse\0shift\0slice\0some\0sort\0splice\0toString\0unshift\0";
 static const char jswSymbols_Array_str[] = "isArray\0";
@@ -10858,7 +10835,6 @@ static const char jswSymbols_Object_proto_str[] = "clone\0hasOwnProperty\0length
 static const char jswSymbols_Object_str[] = "assign\0create\0defineProperties\0defineProperty\0entries\0fromEntries\0getOwnPropertyDescriptor\0getOwnPropertyDescriptors\0getOwnPropertyNames\0getPrototypeOf\0keys\0setPrototypeOf\0values\0";
 static const char jswSymbols_Function_proto_str[] = "apply\0bind\0call\0replaceWith\0";
 static const char jswSymbols_RegExp_proto_str[] = "exec\0test\0";
-static const char jswSymbols_timer_str[] = "add\0get\0list\0remove\0";
 static const char jswSymbols_String_proto_str[] = "charAt\0charCodeAt\0concat\0endsWith\0includes\0indexOf\0lastIndexOf\0length\0match\0padEnd\0padStart\0removeAccents\0repeat\0replace\0replaceAll\0slice\0split\0startsWith\0substr\0substring\0toLowerCase\0toUpperCase\0trim\0";
 static const char jswSymbols_String_str[] = "fromCharCode\0";
 static const char jswSymbols_Modules_str[] = "addCached\0getCached\0removeAllCached\0removeCached\0";
@@ -10886,7 +10862,6 @@ const JswSymList jswSymbolTables[] = {
   {jswSymbols_Object, jswSymbols_Object_str, 13},
   {jswSymbols_Function_proto, jswSymbols_Function_proto_str, 4},
   {jswSymbols_RegExp_proto, jswSymbols_RegExp_proto_str, 2},
-  {jswSymbols_timer, jswSymbols_timer_str, 4},
   {jswSymbols_String_proto, jswSymbols_String_proto_str, 23},
   {jswSymbols_String, jswSymbols_String_str, 1},
   {jswSymbols_Modules, jswSymbols_Modules_str, 4},
@@ -10967,7 +10942,6 @@ const JswSymList *jswGetSymbolListForObject(JsVar *parent) {
     if ((void*)parent->varData.native.ptr==(void*)gen_jswrap_JSON_JSON) return &jswSymbolTables[jswSymbolIndex_JSON];
     if ((void*)parent->varData.native.ptr==(void*)jswrap_number_constructor) return &jswSymbolTables[jswSymbolIndex_Number];
     if ((void*)parent->varData.native.ptr==(void*)jswrap_object_constructor) return &jswSymbolTables[jswSymbolIndex_Object];
-    if ((void*)parent->varData.native.ptr==(void*)gen_jswrap_timer_timer) return &jswSymbolTables[jswSymbolIndex_timer];
     if ((void*)parent->varData.native.ptr==(void*)jswrap_string_constructor) return &jswSymbolTables[jswSymbolIndex_String];
     if ((void*)parent->varData.native.ptr==(void*)gen_jswrap_Modules_Modules) return &jswSymbolTables[jswSymbolIndex_Modules];
     if ((void*)parent->varData.native.ptr==(void*)gen_jswrap_Math_Math) return &jswSymbolTables[jswSymbolIndex_Math];
@@ -11009,7 +10983,6 @@ bool jswIsBuiltInObject(const char *name) {
   return false;
 }
 void *jswGetBuiltInLibrary(const char *name) {
-  if (strcmp(name, "timer")==0) return (void*)gen_jswrap_timer_timer;
   if (strcmp(name, "heatshrink")==0) return (void*)gen_jswrap_heatshrink_heatshrink;
   return 0;
 }
@@ -11074,7 +11047,7 @@ const char *jswGetBuiltInJSLibrary(const char *name) {
   return 0;
 }
 const char *jswGetBuiltInLibraryNames() {
-  return "timer,heatshrink";
+  return "heatshrink";
 }
 JsVar *jswCallFunctionHack(void *function, JsnArgumentType argumentSpecifier, JsVar *thisParam, JsVar **paramData, int paramCount) {
   switch((int)argumentSpecifier) {
@@ -11325,21 +11298,6 @@ JsVar *jswCallFunctionHack(void *function, JsnArgumentType argumentSpecifier, Js
       jsvUnLock(argArray);
       return result;
     }
-    case JSWAT_JSVAR: {
-      JsVar *result = 0;
-      result = (((JsVar*(*)())function)());
-      return result;
-    }
-    case JSWAT_INT32 | (JSWAT_JSVAR << ((((JSWAT_MASK+1)== 1)? 0: ((JSWAT_MASK+1)== 2)? 1: ((JSWAT_MASK+1)== 4)? 2: ((JSWAT_MASK+1)== 8)? 3: ((JSWAT_MASK+1)== 16)? 4: ((JSWAT_MASK+1)== 32)? 5: ((JSWAT_MASK+1)== 64)? 6: ((JSWAT_MASK+1)== 128)? 7: ((JSWAT_MASK+1)== 256)? 8: ((JSWAT_MASK+1)== 512)? 9: ((JSWAT_MASK+1)== 1024)?10: ((JSWAT_MASK+1)== 2048)?11: ((JSWAT_MASK+1)== 4096)?12: ((JSWAT_MASK+1)== 8192)?13: ((JSWAT_MASK+1)==16384)?14: ((JSWAT_MASK+1)==32768)?15:10000 )*1)): {
-      JsVar *result = 0;
-      result = jsvNewFromInteger(((JsVarInt(*)(JsVar*))function)(((paramCount>0)?paramData[0]:0)));
-      return result;
-    }
-    case JSWAT_BOOL | (JSWAT_INT32 << ((((JSWAT_MASK+1)== 1)? 0: ((JSWAT_MASK+1)== 2)? 1: ((JSWAT_MASK+1)== 4)? 2: ((JSWAT_MASK+1)== 8)? 3: ((JSWAT_MASK+1)== 16)? 4: ((JSWAT_MASK+1)== 32)? 5: ((JSWAT_MASK+1)== 64)? 6: ((JSWAT_MASK+1)== 128)? 7: ((JSWAT_MASK+1)== 256)? 8: ((JSWAT_MASK+1)== 512)? 9: ((JSWAT_MASK+1)== 1024)?10: ((JSWAT_MASK+1)== 2048)?11: ((JSWAT_MASK+1)== 4096)?12: ((JSWAT_MASK+1)== 8192)?13: ((JSWAT_MASK+1)==16384)?14: ((JSWAT_MASK+1)==32768)?15:10000 )*1)): {
-      JsVar *result = 0;
-      result = jsvNewFromBool(((bool(*)(JsVarInt))function)(jsvGetInteger((paramCount>0)?paramData[0]:0)));
-      return result;
-    }
     case JSWAT_INT32 | JSWAT_THIS_ARG | (JSWAT_JSVAR << ((((JSWAT_MASK+1)== 1)? 0: ((JSWAT_MASK+1)== 2)? 1: ((JSWAT_MASK+1)== 4)? 2: ((JSWAT_MASK+1)== 8)? 3: ((JSWAT_MASK+1)== 16)? 4: ((JSWAT_MASK+1)== 32)? 5: ((JSWAT_MASK+1)== 64)? 6: ((JSWAT_MASK+1)== 128)? 7: ((JSWAT_MASK+1)== 256)? 8: ((JSWAT_MASK+1)== 512)? 9: ((JSWAT_MASK+1)== 1024)?10: ((JSWAT_MASK+1)== 2048)?11: ((JSWAT_MASK+1)== 4096)?12: ((JSWAT_MASK+1)== 8192)?13: ((JSWAT_MASK+1)==16384)?14: ((JSWAT_MASK+1)==32768)?15:10000 )*1)) | (JSWAT_JSVAR << ((((JSWAT_MASK+1)== 1)? 0: ((JSWAT_MASK+1)== 2)? 1: ((JSWAT_MASK+1)== 4)? 2: ((JSWAT_MASK+1)== 8)? 3: ((JSWAT_MASK+1)== 16)? 4: ((JSWAT_MASK+1)== 32)? 5: ((JSWAT_MASK+1)== 64)? 6: ((JSWAT_MASK+1)== 128)? 7: ((JSWAT_MASK+1)== 256)? 8: ((JSWAT_MASK+1)== 512)? 9: ((JSWAT_MASK+1)== 1024)?10: ((JSWAT_MASK+1)== 2048)?11: ((JSWAT_MASK+1)== 4096)?12: ((JSWAT_MASK+1)== 8192)?13: ((JSWAT_MASK+1)==16384)?14: ((JSWAT_MASK+1)==32768)?15:10000 )*2)): {
       JsVar *result = 0;
       result = jsvNewFromInteger(((int(*)(JsVar*,JsVar*,JsVar*))function)(thisParam,((paramCount>0)?paramData[0]:0),((paramCount>1)?paramData[1]:0)));
@@ -11348,6 +11306,11 @@ JsVar *jswCallFunctionHack(void *function, JsnArgumentType argumentSpecifier, Js
     case JSWAT_BOOL | JSWAT_THIS_ARG | (JSWAT_JSVAR << ((((JSWAT_MASK+1)== 1)? 0: ((JSWAT_MASK+1)== 2)? 1: ((JSWAT_MASK+1)== 4)? 2: ((JSWAT_MASK+1)== 8)? 3: ((JSWAT_MASK+1)== 16)? 4: ((JSWAT_MASK+1)== 32)? 5: ((JSWAT_MASK+1)== 64)? 6: ((JSWAT_MASK+1)== 128)? 7: ((JSWAT_MASK+1)== 256)? 8: ((JSWAT_MASK+1)== 512)? 9: ((JSWAT_MASK+1)== 1024)?10: ((JSWAT_MASK+1)== 2048)?11: ((JSWAT_MASK+1)== 4096)?12: ((JSWAT_MASK+1)== 8192)?13: ((JSWAT_MASK+1)==16384)?14: ((JSWAT_MASK+1)==32768)?15:10000 )*1)) | (JSWAT_JSVAR << ((((JSWAT_MASK+1)== 1)? 0: ((JSWAT_MASK+1)== 2)? 1: ((JSWAT_MASK+1)== 4)? 2: ((JSWAT_MASK+1)== 8)? 3: ((JSWAT_MASK+1)== 16)? 4: ((JSWAT_MASK+1)== 32)? 5: ((JSWAT_MASK+1)== 64)? 6: ((JSWAT_MASK+1)== 128)? 7: ((JSWAT_MASK+1)== 256)? 8: ((JSWAT_MASK+1)== 512)? 9: ((JSWAT_MASK+1)== 1024)?10: ((JSWAT_MASK+1)== 2048)?11: ((JSWAT_MASK+1)== 4096)?12: ((JSWAT_MASK+1)== 8192)?13: ((JSWAT_MASK+1)==16384)?14: ((JSWAT_MASK+1)==32768)?15:10000 )*2)): {
       JsVar *result = 0;
       result = jsvNewFromBool(((bool(*)(JsVar*,JsVar*,JsVar*))function)(thisParam,((paramCount>0)?paramData[0]:0),((paramCount>1)?paramData[1]:0)));
+      return result;
+    }
+    case JSWAT_JSVAR: {
+      JsVar *result = 0;
+      result = (((JsVar*(*)())function)());
       return result;
     }
     case JSWAT_VOID | (JSWAT_JSVAR << ((((JSWAT_MASK+1)== 1)? 0: ((JSWAT_MASK+1)== 2)? 1: ((JSWAT_MASK+1)== 4)? 2: ((JSWAT_MASK+1)== 8)? 3: ((JSWAT_MASK+1)== 16)? 4: ((JSWAT_MASK+1)== 32)? 5: ((JSWAT_MASK+1)== 64)? 6: ((JSWAT_MASK+1)== 128)? 7: ((JSWAT_MASK+1)== 256)? 8: ((JSWAT_MASK+1)== 512)? 9: ((JSWAT_MASK+1)== 1024)?10: ((JSWAT_MASK+1)== 2048)?11: ((JSWAT_MASK+1)== 4096)?12: ((JSWAT_MASK+1)== 8192)?13: ((JSWAT_MASK+1)==16384)?14: ((JSWAT_MASK+1)==32768)?15:10000 )*1)) | (JSWAT_JSVAR << ((((JSWAT_MASK+1)== 1)? 0: ((JSWAT_MASK+1)== 2)? 1: ((JSWAT_MASK+1)== 4)? 2: ((JSWAT_MASK+1)== 8)? 3: ((JSWAT_MASK+1)== 16)? 4: ((JSWAT_MASK+1)== 32)? 5: ((JSWAT_MASK+1)== 64)? 6: ((JSWAT_MASK+1)== 128)? 7: ((JSWAT_MASK+1)== 256)? 8: ((JSWAT_MASK+1)== 512)? 9: ((JSWAT_MASK+1)== 1024)?10: ((JSWAT_MASK+1)== 2048)?11: ((JSWAT_MASK+1)== 4096)?12: ((JSWAT_MASK+1)== 8192)?13: ((JSWAT_MASK+1)==16384)?14: ((JSWAT_MASK+1)==32768)?15:10000 )*2)): {
@@ -12138,7 +12101,7 @@ uint32_t heatshrink_encode_cb(int (*in_callback)(uint32_t *cbdata), uint32_t *in
       }
     }
     bool ok = heatshrink_encoder_sink(&hse, &inBuf[inBufOffset], inBufCount, &count) >= 0;
-    do { if (!(ok)) jsAssertFail("bin/espruino_embedded.c",14641,""); } while(0);( (void)(ok) );
+    do { if (!(ok)) jsAssertFail("bin/espruino_embedded.c",14619,""); } while(0);( (void)(ok) );
     inBufCount -= count;
     inBufOffset += count;
     if ((inBufCount==0) && (lastByte < 0)) {
@@ -12147,13 +12110,13 @@ uint32_t heatshrink_encode_cb(int (*in_callback)(uint32_t *cbdata), uint32_t *in
     HSE_poll_res pres;
     do {
       pres = heatshrink_encoder_poll(&hse, outBuf, sizeof(outBuf), &count);
-      do { if (!(pres >= 0)) jsAssertFail("bin/espruino_embedded.c",14651,""); } while(0);
+      do { if (!(pres >= 0)) jsAssertFail("bin/espruino_embedded.c",14629,""); } while(0);
       if (out_callback)
         for (i=0;i<count;i++)
           out_callback(outBuf[i], out_cbdata);
       polled += count;
     } while (pres == HSER_POLL_MORE);
-    do { if (!(pres == HSER_POLL_EMPTY)) jsAssertFail("bin/espruino_embedded.c",14657,""); } while(0);
+    do { if (!(pres == HSER_POLL_EMPTY)) jsAssertFail("bin/espruino_embedded.c",14635,""); } while(0);
     if ((inBufCount==0) && (lastByte < 0)) {
       heatshrink_encoder_finish(&hse);
     }
@@ -12181,7 +12144,7 @@ uint32_t heatshrink_decode_cb(int (*in_callback)(uint32_t *cbdata), uint32_t *in
       }
     }
     bool ok = heatshrink_decoder_sink(&hsd, &inBuf[inBufOffset], inBufCount, &count) >= 0;
-    do { if (!(ok)) jsAssertFail("bin/espruino_embedded.c",14690,""); } while(0);( (void)(ok) );
+    do { if (!(ok)) jsAssertFail("bin/espruino_embedded.c",14668,""); } while(0);( (void)(ok) );
     inBufCount -= count;
     inBufOffset += count;
     if ((inBufCount==0) && (lastByte < 0)) {
@@ -12190,13 +12153,13 @@ uint32_t heatshrink_decode_cb(int (*in_callback)(uint32_t *cbdata), uint32_t *in
     HSD_poll_res pres;
     do {
       pres = heatshrink_decoder_poll(&hsd, outBuf, sizeof(outBuf), &count);
-      do { if (!(pres >= 0)) jsAssertFail("bin/espruino_embedded.c",14700,""); } while(0);
+      do { if (!(pres >= 0)) jsAssertFail("bin/espruino_embedded.c",14678,""); } while(0);
       if (out_callback)
         for (i=0;i<count;i++)
           out_callback(outBuf[i], out_cbdata);
       polled += count;
     } while (pres == HSER_POLL_MORE);
-    do { if (!(pres == HSER_POLL_EMPTY)) jsAssertFail("bin/espruino_embedded.c",14706,""); } while(0);
+    do { if (!(pres == HSER_POLL_EMPTY)) jsAssertFail("bin/espruino_embedded.c",14684,""); } while(0);
     if (lastByte < 0) {
       heatshrink_decoder_finish(&hsd);
     }
@@ -12228,6 +12191,7 @@ void jsiConsolePrintStringVar(JsVar *v) {
 }
 bool jsiFreeMoreMemory() { return false; }
 void jshKickWatchDog() { }
+void jshKickSoftWatchDog() { }
 void jsiConsoleRemoveInputLine() {}
 JsSysTime jshGetTimeFromMilliseconds(JsVarFloat ms) {
   return (JsSysTime)(ms*1000);
@@ -12283,14 +12247,16 @@ bool ejs_create(unsigned int varCount) {
   jsvInit(varCount);
   return jsVars!=NULL;
 }
-struct ejs *ejs_create_instance(unsigned int varCount) {
-  struct ejs *ejs = (struct ejs*)malloc(sizeof(struct ejs));
+struct ejs *ejs_create_instance(void) {
+  ejs_unset_instance();
+  struct ejs *ejs = (struct ejs*)calloc(1, sizeof(struct ejs));
   if (!ejs) return 0;
   ejs->exception = NULL;
   ejs->root = jsvRef(jsvNewWithFlags(JSV_ROOT));
   activeEJS = ejs;
   jspInit();
   ejs->hiddenRoot = execInfo.hiddenRoot;
+  ejs_unset_instance();
   return ejs;
 }
 void ejs_destroy_instance(struct ejs *ejs) {
@@ -12298,6 +12264,7 @@ void ejs_destroy_instance(struct ejs *ejs) {
   ejs_clear_exception();
   jspKill();
   jsvUnLock(ejs->root);
+  ejs_unset_instance();
   free(ejs);
 }
 void ejs_destroy() {
@@ -12371,7 +12338,7 @@ const JshPinInfo pinInfo[33] = {
            { JSH_PORTD, JSH_PIN0+32, JSH_ANALOG_NONE, { } },
 };
 JsVar *jswrap_array_constructor(JsVar *args) {
-  do { if (!(args)) jsAssertFail("bin/espruino_embedded.c",14999,""); } while(0);
+  do { if (!(args)) jsAssertFail("bin/espruino_embedded.c",14981,""); } while(0);
   if (jsvGetArrayLength(args)==1) {
     JsVar *firstArg = jsvSkipNameAndUnLock(jsvGetArrayItem(args,0));
     if (jsvIsNumeric(firstArg)) {
@@ -12864,7 +12831,7 @@ JsVar *jswrap_array_fill(JsVar *parent, JsVar *value, JsVarInt start, JsVar *end
   return jsvLockAgain(parent);
 }
 void _jswrap_array_reverse_block(JsVar *parent, JsvIterator *it, int items) {
-  do { if (!(items > 1)) jsAssertFail("bin/espruino_embedded.c",16004,""); } while(0);
+  do { if (!(items > 1)) jsAssertFail("bin/espruino_embedded.c",15986,""); } while(0);
   JsvIterator ita, itb;
   jsvIteratorClone(&ita, it);
   jsvIteratorClone(&itb, it);
@@ -14073,7 +14040,7 @@ void jswrap_trace(JsVar *root) {
   }
 }
 void jswrap_print(JsVar *v) {
-  do { if (!(jsvIsArray(v))) jsAssertFail("bin/espruino_embedded.c",19387,""); } while(0);
+  do { if (!(jsvIsArray(v))) jsAssertFail("bin/espruino_embedded.c",19369,""); } while(0);
   jsiConsoleRemoveInputLine();
   JsvObjectIterator it;
   jsvObjectIteratorNew(&it, v);
@@ -14227,7 +14194,7 @@ JsVar *jswrap_json_parse_liberal(JsVar *v, bool noExceptions) {
   return res;
 }
 void jsfGetJSONForFunctionWithCallback(JsVar *var, JSONFlags flags, vcbprintf_callback user_callback, void *user_data) {
-  do { if (!(jsvIsFunction(var))) jsAssertFail("bin/espruino_embedded.c",19675,""); } while(0);
+  do { if (!(jsvIsFunction(var))) jsAssertFail("bin/espruino_embedded.c",19657,""); } while(0);
   JsVar *codeVar = 0;
   JsvObjectIterator it;
   jsvObjectIteratorNew(&it, var);
@@ -14496,7 +14463,7 @@ void jsfGetJSONWithCallback(JsVar *var, JsVar *varName, JSONFlags flags, const c
   var->flags &= ~JSV_IS_RECURSING;
 }
 void jsfGetJSONWhitespace(JsVar *var, JsVar *result, JSONFlags flags, const char *whitespace) {
-  do { if (!(jsvIsString(result))) jsAssertFail("bin/espruino_embedded.c",19985,""); } while(0);
+  do { if (!(jsvIsString(result))) jsAssertFail("bin/espruino_embedded.c",19967,""); } while(0);
   JsvStringIterator it;
   jsvStringIteratorNew(&it, result, 0);
   jsvStringIteratorGotoEnd(&it);
@@ -14747,7 +14714,7 @@ JsVar *jswrap_object_getOwnPropertyDescriptor(JsVar *parent, JsVar *name) {
   JsVar *propName = jsvAsArrayIndex(name);
   JsVar *varName = jspGetVarNamedField(parent, propName, true);
   jsvUnLock(propName);
-  do { if (!(varName)) jsAssertFail("bin/espruino_embedded.c",20603,""); } while(0);
+  do { if (!(varName)) jsAssertFail("bin/espruino_embedded.c",20585,""); } while(0);
   if (!varName) return 0;
   JsVar *obj = jsvNewObject();
   if (!obj) {
@@ -15033,7 +15000,7 @@ JsVar *jswrap_function_apply_or_call(JsVar *parent, JsVar *thisArg, JsVar *argsA
       if (jsvIsIntegerish(idxVar)) {
         JsVarInt idx = jsvGetInteger(idxVar);
         if (idx>=0 && idx<(int)argC) {
-          do { if (!(!args[idx])) jsAssertFail("bin/espruino_embedded.c",21394,""); } while(0);
+          do { if (!(!args[idx])) jsAssertFail("bin/espruino_embedded.c",21376,""); } while(0);
           args[idx] = jsvIteratorGetValue(&it);
         }
       }
@@ -15433,252 +15400,13 @@ bool jswrap_regexp_hasFlag(JsVar *parent, char flag) {
   jsvUnLock(flags);
   return has;
 }
-JsVar *jswrap_timer_list();
-JsVar *jswrap_timer_get(int id);
-int jswrap_timer_add(JsVar *timer);
-bool jswrap_timer_remove(int id);
-void jstOnRunInterruptJSEvent(const uint8_t *eventData, unsigned int eventLen);
-void jstRunInterruptingJS();
-typedef enum {
-  UET_NONE,
-  UET_WAKEUP,
-  UET_SET,
-  UET_EXECUTE,
-  UET_WRITE_BYTE,
-  UET_READ_BYTE,
-  UET_WRITE_SHORT,
-  UET_READ_SHORT,
-  UET_TYPE_MASK = 15,
-  UET_FINISHED = 16,
-} __attribute__ ((__packed__)) UtilTimerEventType;
-typedef struct UtilTimerTaskSet {
-  Pin pins[(8)];
-  uint8_t value;
-} __attribute__ ((__packed__)) UtilTimerTaskSet;
-typedef struct UtilTimerTaskBuffer {
-  JsVar *var;
-  JsVarRef currentBuffer;
-  JsVarRef nextBuffer;
-  unsigned short currentValue;
-  unsigned short charIdx;
-  unsigned short endIdx;
-  Pin pin;
-  Pin npin;
-} __attribute__ ((__packed__)) UtilTimerTaskBuffer;
-typedef void (*UtilTimerTaskExecFn)(JsSysTime time, void* userdata);
-typedef struct UtilTimerTaskExec {
-  UtilTimerTaskExecFn fn;
-  void *userdata;
-} __attribute__ ((__packed__)) UtilTimerTaskExec;
-typedef union UtilTimerTaskData {
-  UtilTimerTaskSet set;
-  UtilTimerTaskBuffer buffer;
-  UtilTimerTaskExec execute;
-} UtilTimerTaskData;
-typedef struct UtilTimerTask {
-  int time;
-  unsigned int repeatInterval;
-  UtilTimerTaskData data;
-  UtilTimerEventType type;
-} __attribute__ ((__packed__)) UtilTimerTask;
-extern UtilTimerTask utilTimerTaskInfo[(4)];
-void jstUtilTimerInterruptHandler();
-void jstUtilTimerWaitEmpty();
-bool jstUtilTimerIsRunning();
-uint32_t jstGetUtilTimerOffset();
-bool jstGetLastPinTimerTask(Pin pin, UtilTimerTask *task);
-bool jstGetLastBufferTimerTask(JsVar *var, UtilTimerTask *task);
-bool jstPinOutputAtTime(JsSysTime time, uint32_t *timerOffset, Pin *pins, int pinCount, uint8_t value);
-bool jstPinPWM(JsVarFloat freq, JsVarFloat dutyCycle, Pin pin);
-bool jstExecuteFn(UtilTimerTaskExecFn fn, void *userdata, JsSysTime startTime, uint32_t period, uint32_t *timerOffset);
-bool jstStopExecuteFn(UtilTimerTaskExecFn fn, void *userdata);
-void jstSetWakeUp(JsSysTime period);
-void jstClearWakeUp();
-int jstStartSignal(JsSysTime startTime, JsSysTime period, Pin pin, Pin npin, JsVar *currentData, JsVar *nextData, UtilTimerEventType type);
-bool jstStopBufferTimerTask(JsVar *var);
-bool jstStopPinTimerTask(Pin pin);
-void jstReset();
-void jstSystemTimeChanged(JsSysTime diff);
-void jstRestartUtilTimer();
-int utilTimerGetUnusedIndex(bool wait);
-bool utilTimerInsertTask(uint8_t taskIdx, uint32_t *timerOffset, bool firstOnly);
-int utilTimerFindTask(bool (checkCallback)(UtilTimerTask *task, void* data), void *checkCallbackData);
-bool utilTimerRemoveTask(int id);
-bool utilTimerGetLastTask(bool (checkCallback)(UtilTimerTask *task, void* data), void *checkCallbackData, UtilTimerTask *task);
-void jstOnCustomEvent(IOEventFlags eventFlags, uint8_t *data, int dataLen);
-volatile bool runningInterruptingJS = false;
-void jswrap_timer_queue_interrupt_js(JsSysTime time, void* userdata) {
-  uint8_t timerIdx = (uint8_t)(size_t)userdata;
-  if (!runningInterruptingJS) {
-    jshPushIOCharEvents(EV_RUN_INTERRUPT_JS, (char*)&timerIdx, 1);
-    execInfo.execute |= EXEC_RUN_INTERRUPT_JS;
-    jshHadEvent();
-  }
-}
-void jstOnRunInterruptJSEvent(const uint8_t *eventData, unsigned int eventLen) {
-  runningInterruptingJS = true;
-  execInfo.execute &= ~EXEC_RUN_INTERRUPT_JS;
-  for (unsigned int i=0;i<eventLen;i++) {
-    uint8_t timerIdx = eventData[i];
-    JsVar *timerFns = jsvObjectGetChildIfExists(execInfo.hiddenRoot, "TMFN");
-    if (timerFns) {
-      JsVar *fn = jsvGetArrayItem(timerFns, timerIdx);
-      if (jsvIsFunction(fn)) {
-        jsvUnLock(jspExecuteFunction(fn, execInfo.root, 0, NULL));
-        jsiCheckErrors(false);
-      }
-      jsvUnLock2(timerFns, fn);
-    }
-  }
-  runningInterruptingJS = false;
-}
-void jstRunInterruptingJS() {
-  uint8_t data[64];
-  unsigned int len = 0;
-  if (jshPopIOEventOfType(EV_RUN_INTERRUPT_JS, data, &len))
-    jstOnRunInterruptJSEvent(data, len);
-}
-JsVar *jswrap_timer_list() {
-  JsVar *arr = jsvNewEmptyArray();
-  for (int idx=0;idx<(4);idx++) {
-    JsVar *obj = jswrap_timer_get(idx);
-    if (obj) {
-      jsvSetArrayItem(arr, idx, obj);
-      jsvUnLock(obj);
-    }
-  }
-  return arr;
-}
-JsVar *jswrap_timer_get(int id) {
-  if (id<0 || id>=(4)) {
-    return 0;
-  }
-  jshInterruptOff();
-  UtilTimerTask task = utilTimerTaskInfo[id];
-  jshInterruptOn();
-  if (task.type == UET_NONE) return 0;
-  JsVar *obj = jsvNewObject();
-  jsvObjectSetIntChild(obj, "id", id);
-  const char *typeStr = NULL;
-  switch (task.type & UET_TYPE_MASK) {
-  case UET_NONE: do { if (!(0)) jsAssertFail("bin/espruino_embedded.c",22132,""); } while(0); break;
-  case UET_WAKEUP : typeStr="WKUP"; break;
-  case UET_SET :
-    typeStr="SET";
-    jsvObjectSetIntChild(obj, "value", task.data.set.value);
-    break;
-  case UET_WRITE_BYTE : typeStr="WR8"; break;
-  case UET_READ_BYTE : typeStr="RD8"; break;
-  case UET_WRITE_SHORT : typeStr="WR16"; break;
-  case UET_READ_SHORT : typeStr="RD16"; break;
-  case UET_EXECUTE :
-    typeStr="EXEC";
-    if (task.data.execute.fn == jswrap_timer_queue_interrupt_js) {
-      int timerIdx = (int)(size_t)task.data.execute.userdata;
-      JsVar *timerFns = jsvObjectGetChildIfExists(execInfo.hiddenRoot, "TMFN");
-      if (timerFns) {
-        jsvObjectSetChildAndUnLock(obj, "fn", jsvGetArrayItem(timerFns, timerIdx));
-        jsvUnLock(timerFns);
-      }
-    } else {
-      jsvObjectSetIntChild(obj, "ptr", (size_t)task.data.execute.fn);
-      jsvObjectSetIntChild(obj, "userdata", (size_t)task.data.execute.userdata);
-    }
-    break;
-  default: break;
-  }
-  if ((((task.type)==UET_SET) || ((task.type)==UET_SET))) {
-    JsVar *pinsArr = jsvNewEmptyArray();
-    int pinCount = (8);
-    for (int i=0;i<pinCount;i++)
-      if (task.data.set.pins[i] != ((Pin)0xFF))
-        jsvArrayPushAndUnLock(pinsArr, jsvNewFromPin(task.data.set.pins[i]));
-    jsvObjectSetChildAndUnLock(obj, "pins", pinsArr);
-  }
-  if (( ((task.type)==UET_WRITE_BYTE) || ((task.type)==UET_READ_BYTE) || ((task.type)==UET_WRITE_SHORT) || ((task.type)==UET_READ_SHORT))) {
-    jsvObjectSetChildAndUnLock(obj, "buffer", jsvLock(task.data.buffer.currentBuffer));
-    if (task.data.buffer.nextBuffer)
-      jsvObjectSetChildAndUnLock(obj, "buffer2", jsvLock(task.data.buffer.nextBuffer));
-  }
-  if (task.type & UET_FINISHED)
-    jsvObjectSetBoolChild(obj, "finished", 1);
-  jsvObjectSetChildAndUnLock(obj, "type", typeStr ? jsvNewFromString(typeStr) : jsvNewFromInteger(task.type));
-  jsvObjectSetFloatChild(obj, "time", jshGetMillisecondsFromTime(task.time));
-  if (task.repeatInterval)
-    jsvObjectSetFloatChild(obj, "interval", jshGetMillisecondsFromTime(task.repeatInterval));
-  return obj;
-}
-int jswrap_timer_add(JsVar *timer) {
-  JsVarFloat time=0, interval=0;
-  JsVar *type = 0, *fn = 0;
-  int value=0,ptr=0,userdata=0;
-  Pin pins[(8)];
-  for (int i=0;i<(8);i++)
-    pins[i] = ((Pin)0xFF);
-  jsvConfigObject configs[] = {
-      {"type", JSV_STRING_0, &type},
-      {"time", JSV_FLOAT, &time},
-      {"interval", JSV_FLOAT, &interval},
-      {"value", JSV_INTEGER, &value},
-      {"fn", JSV_OBJECT, &fn},
-      {"ptr", JSV_INTEGER, &ptr},
-      {"userdata", JSV_INTEGER, &userdata},
-      {"pin", JSV_PIN, &pins[0]},
-      {"pin2", JSV_PIN, &pins[1]},
-      {"pin3", JSV_PIN, &pins[2]},
-      {"pin4", JSV_PIN, &pins[3]}
-  };
-  if (!jsvReadConfigObject(timer, configs, sizeof(configs) / sizeof(jsvConfigObject))) {
-    return -1;
-  }
-  UtilTimerEventType evtType = UET_NONE;
-  if (jsvIsStringIEqual(type, "SET")) {
-    if (pins[0] != ((Pin)0xFF)) evtType = UET_SET;
-    else jsExceptionHere(JSET_ERROR, "`pin` required for SET timer");
-  } else if (jsvIsStringIEqual(type, "EXEC")) {
-    if (ptr || jsvIsFunction(fn)) evtType = UET_EXECUTE;
-    else jsExceptionHere(JSET_ERROR, "`ptr` or `fn` required for EXEC timer");
-  } else jsExceptionHere(JSET_ERROR, "Unsupported timer type %q", type);
-  jsvUnLock(type);
-  if (evtType == UET_NONE) {
-    jsvUnLock(fn);
-    return -1;
-  }
-  int idx = utilTimerGetUnusedIndex(true );
-  if (idx<0) return -1;
-  UtilTimerTask *task = &utilTimerTaskInfo[idx];
-  task->time = (int)jshGetTimeFromMilliseconds(time);
-  task->repeatInterval = (unsigned int)jshGetTimeFromMilliseconds(interval);
-  if (evtType == UET_SET) {
-    for (int i=0;i<(8);i++)
-      task->data.set.pins[i] = pins[i];
-    task->data.set.value = value;
-  } else if (evtType == UET_EXECUTE) {
-    if (jsvIsFunction(fn)) {
-      JsVar *timerFns = jsvObjectGetChild(execInfo.hiddenRoot, "TMFN", JSV_ARRAY);
-      if (timerFns) jsvSetArrayItem(timerFns, idx, fn);
-      jsvUnLock(timerFns);
-      ptr = (size_t)jswrap_timer_queue_interrupt_js;
-      userdata = idx;
-    }
-    task->data.execute.fn = (UtilTimerTaskExecFn)(size_t)ptr;
-    task->data.execute.userdata = (void*)(size_t)userdata;
-  }
-  task->type = evtType;
-  jsvUnLock(fn);
-  utilTimerInsertTask(idx, NULL, false );
-  return idx;
-}
-bool jswrap_timer_remove(int id) {
-  return utilTimerRemoveTask(id);
-}
 JsVar *jswrap_string_constructor(JsVar *args) {
   if (jsvGetArrayLength(args)==0)
     return jsvNewFromEmptyString();
   return jsvAsStringAndUnLock(jsvGetArrayItem(args, 0));
 }
 JsVar *jswrap_string_fromCharCode(JsVar *arr) {
-  do { if (!(jsvIsArray(arr))) jsAssertFail("bin/espruino_embedded.c",22410,""); } while(0);
+  do { if (!(jsvIsArray(arr))) jsAssertFail("bin/espruino_embedded.c",22040,""); } while(0);
   JsVar *r = jsvNewFromEmptyString();
   if (!r) return 0;
   JsvObjectIterator it;

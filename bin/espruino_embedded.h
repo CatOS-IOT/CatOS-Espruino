@@ -39,7 +39,7 @@ struct ejs {
   unsigned char jsFlags, jsErrorFlags;
 };
 bool ejs_create(unsigned int varCount);
-struct ejs *ejs_create_instance();
+struct ejs *ejs_create_instance(void);
 void ejs_set_instance(struct ejs *ejs);
 void ejs_unset_instance();
 struct ejs *ejs_get_active_instance();
