@@ -170,8 +170,7 @@ ifeq ($(BOARD),)
   #$(info *************************************************************)
   #$(info *           To build, use BOARD=my_board make               *)
   #$(info *************************************************************)
-  BOARD=LINUX
-  DEFINES+=-DSYSFS_GPIO_DIR="\"/sys/class/gpio\""
+  BOARD=EMBED
  endif
 endif
 
